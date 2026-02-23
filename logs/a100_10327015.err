@@ -1,0 +1,29 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) xalt/3.1.4
+Resolved 99 packages in 24ms
+Audited 65 packages in 24ms
+/home/sohn31/Group-VLM-RL/.venv/lib64/python3.9/site-packages/tyro/_parsers.py:353: UserWarning: The field `wandb-entity` is annotated with type `<class 'str'>`, but the default value `None` has type `<class 'NoneType'>`. We'll try to handle this gracefully, but it may cause unexpected behavior.
+  warnings.warn(message)
+/home/sohn31/Group-VLM-RL/.venv/lib64/python3.9/site-packages/tyro/_parsers.py:353: UserWarning: The field `target-kl` is annotated with type `<class 'float'>`, but the default value `None` has type `<class 'NoneType'>`. We'll try to handle this gracefully, but it may cause unexpected behavior.
+  warnings.warn(message)
+error: XDG_RUNTIME_DIR is invalid or not set in the environment.
+Traceback (most recent call last):
+  File "/home/sohn31/Group-VLM-RL/experiments/ppo_vlm.py", line 272, in <module>
+    torch.save(q_network.state_dict(), best_model_path)
+NameError: name 'q_network' is not defined
+Exception ignored in: <function VectorEnv.__del__ at 0x150bce92e790>
+Traceback (most recent call last):
+  File "/home/sohn31/Group-VLM-RL/.venv/lib64/python3.9/site-packages/gymnasium/vector/vector_env.py", line 342, in __del__
+  File "/home/sohn31/Group-VLM-RL/.venv/lib64/python3.9/site-packages/gymnasium/vector/vector_env.py", line 234, in close
+  File "/home/sohn31/Group-VLM-RL/.venv/lib64/python3.9/site-packages/gymnasium/vector/sync_vector_env.py", line 375, in close_extras
+  File "/home/sohn31/Group-VLM-RL/.venv/lib64/python3.9/site-packages/gymnasium/vector/sync_vector_env.py", line 375, in <listcomp>
+  File "/home/sohn31/Group-VLM-RL/.venv/lib64/python3.9/site-packages/gymnasium/core.py", line 341, in close
+  File "/home/sohn31/Group-VLM-RL/.venv/lib64/python3.9/site-packages/gymnasium/core.py", line 341, in close
+  File "/home/sohn31/Group-VLM-RL/.venv/lib64/python3.9/site-packages/gymnasium/core.py", line 341, in close
+  [Previous line repeated 1 more time]
+  File "/home/sohn31/Group-VLM-RL/.venv/lib64/python3.9/site-packages/gymnasium/wrappers/common.py", line 329, in close
+  File "/home/sohn31/Group-VLM-RL/.venv/lib64/python3.9/site-packages/gymnasium/envs/classic_control/cartpole.py", line 347, in close
+ImportError: sys.meta_path is None, Python is likely shutting down
+srun: error: gilbreth-i004: task 0: Exited with exit code 1

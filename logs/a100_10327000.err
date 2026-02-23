@@ -1,0 +1,9 @@
+The following modules were not unloaded:
+  (Use "module --force purge" to unload all):
+
+  1) xalt/3.1.4
+Resolved 99 packages in 18ms
+Audited 65 packages in 17ms
+/home/sohn31/Group-VLM-RL/.venv/lib64/python3.9/site-packages/tyro/_parsers.py:353: UserWarning: The field `wandb-entity` is annotated with type `<class 'str'>`, but the default value `None` has type `<class 'NoneType'>`. We'll try to handle this gracefully, but it may cause unexpected behavior.
+  warnings.warn(message)
+error: XDG_RUNTIME_DIR is invalid or not set in the environment.

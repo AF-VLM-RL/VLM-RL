@@ -32,17 +32,31 @@ class VLMRewardWrapper(gym.Wrapper):
         print(f"Text Features (FP16): {self.text_features.cpu().numpy()}")
         print(f"Device: {device}, Model dtype: {self.model.parameters().__next__().dtype}")
 
+    def reset(self, **kwargs):
+        obs, info = self.env.reset(**kwargs)
+        self.step_count = 0
+        
+        frame = self.env.render()
+        
+        # LOUD ERROR if rendering fails
+        assert frame is not None, "FATAL: env.render() returned None! Check render_mode='rgb_array' in make_env."
+        
+        self.last_reward = self.compute_vlm_reward(frame)
+        print(f"[VLM Debug] Reset Reward Calculated: {self.last_reward:.4f}")
+            
+        return obs, info
+
     def step(self, action):
         obs, original_reward, terminated, truncated, info = self.env.step(action)
         self.step_count += 1
 
-        # 4. LAZY UPDATE: Only run CLIP every 'skip_frames' steps
         if self.step_count % self.skip_frames == 0:
             frame = self.env.render()
-            if frame is not None:
-                self.last_reward = self.compute_vlm_reward(frame)
+            assert frame is not None, "FATAL: env.render() returned None during step()!"
+            
+            self.last_reward = self.compute_vlm_reward(frame)
+            print(f"[VLM Debug] Step {self.step_count} Reward: {self.last_reward:.4f}")
 
-        # Reuse the last calculated reward (approximate but fast)
         info["vlm_reward"] = self.last_reward
         
         return obs, self.last_reward, terminated, truncated, info
