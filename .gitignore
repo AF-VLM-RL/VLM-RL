@@ -1,2 +1,3 @@
 cleanrl/
-*pycache*/
+__pycache__/
+*.pyc
