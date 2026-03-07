@@ -37,5 +37,7 @@ srun uv run python experiments/ppo_vlm.py \
   --seed 1 \
   --env-id CartPole-v1 \
   --total-timesteps 50000 \
-  --vlm-goal "a pole balancing upright on a cart"
-
+  --vlm-goal "a pole balancing upright on a cart" \
+  --track \
+  --wandb-project-name "cleanrl-experiments" \
+  --capture-video

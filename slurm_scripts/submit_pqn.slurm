@@ -36,5 +36,7 @@ echo "Starting PQN training..."
 srun uv run python experiments/pqn.py \
   --seed 1 \
   --env-id CartPole-v1 \
-  --total-timesteps 50000
-
+  --total-timesteps 50000 \
+  --track \
+  --capture-video \
+  --wandb-project-name "cleanrl-experiments"

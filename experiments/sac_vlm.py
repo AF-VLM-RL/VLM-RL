@@ -23,6 +23,7 @@ if _CLEANRL_ROOT not in sys.path:
     sys.path.insert(0, _CLEANRL_ROOT)
 
 from cleanrl_utils.buffers import ReplayBuffer  # pyright: ignore[reportMissingImports]
+from src.utils import sanitize_prompt_for_filename
 from src.wrappers import VLMRewardWrapper
 
 
@@ -185,7 +186,8 @@ class Actor(nn.Module):
 
 if __name__ == "__main__":
     args = tyro.cli(Args)
-    run_name = f"{args.env_id}__{args.exp_name}__{args.seed}__{int(time.time())}"
+    prompt_slug = sanitize_prompt_for_filename(args.vlm_goal)
+    run_name = f"{args.env_id}__{args.exp_name}__{prompt_slug}__{args.seed}__{int(time.time())}"
     run_dir = os.path.join(_PROJECT_ROOT, "runs", run_name)
     os.makedirs(run_dir, exist_ok=True)
 

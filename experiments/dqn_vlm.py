@@ -23,6 +23,7 @@ if _CLEANRL_ROOT not in sys.path:
     sys.path.insert(0, _CLEANRL_ROOT)
 
 from cleanrl_utils.buffers import ReplayBuffer
+from src.utils import sanitize_prompt_for_filename
 from src.wrappers import VLMRewardWrapper
 
 
@@ -128,7 +129,8 @@ def linear_schedule(start_e: float, end_e: float, duration: int, t: int):
 if __name__ == "__main__":
     args = tyro.cli(Args)
     assert args.num_envs == 1, "vectorized envs are not supported at the moment"
-    run_name = f"{args.env_id}__{args.exp_name}__{args.seed}__{int(time.time())}"
+    prompt_slug = sanitize_prompt_for_filename(args.vlm_goal)
+    run_name = f"{args.env_id}__{args.exp_name}__{prompt_slug}__{args.seed}__{int(time.time())}"
     run_dir = os.path.join("runs", run_name)
     os.makedirs(run_dir, exist_ok=True)
     if args.track:
@@ -187,8 +189,6 @@ if __name__ == "__main__":
         handle_timeout_termination=False,
     )
     start_time = time.time()
-    best_episodic_return = -float("inf")
-    best_model_path = os.path.join(run_dir, "best_model.pt")
 
     # TRY NOT TO MODIFY: start the game
     obs, _ = envs.reset(seed=args.seed)
@@ -222,12 +222,6 @@ if __name__ == "__main__":
                     print(f"global_step={global_step}, episodic_return={ep_return:.3f}")
                     writer.add_scalar("charts/episodic_return", ep_return, global_step)
                     writer.add_scalar("charts/episodic_length", ep_length, global_step)
-
-                    # --- NEW: Save the model if it's the best we've seen ---
-                    if ep_return > best_episodic_return:
-                        best_episodic_return = ep_return
-                        torch.save(q_network.state_dict(), best_model_path)
-                        print(f"--> New best model saved with return: {best_episodic_return:.2f}")
 
         # TRY NOT TO MODIFY: save data to reply buffer; handle `final_observation`
         real_next_obs = next_obs.copy()

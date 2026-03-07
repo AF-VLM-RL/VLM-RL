@@ -9,8 +9,13 @@ This script decouples VLM querying from the active PPO loop:
 import os
 import random
 import re
+import sys
 import time
 from collections import Counter, defaultdict
+
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
 from dataclasses import dataclass
 from typing import Optional
 
@@ -24,6 +29,8 @@ import tyro
 from torch.distributions.categorical import Categorical
 from torch.utils.tensorboard import SummaryWriter
 from transformers import AutoModelForVision2Seq, AutoProcessor
+
+from src.utils import sanitize_prompt_for_filename
 
 
 @dataclass
@@ -502,7 +509,8 @@ if __name__ == "__main__":
     args.batch_size = int(args.num_envs * args.num_steps)
     args.minibatch_size = int(args.batch_size // args.num_minibatches)
     args.num_iterations = args.total_timesteps // args.batch_size
-    run_name = f"{args.env_id}__{args.exp_name}__{args.seed}__{int(time.time())}"
+    prompt_slug = sanitize_prompt_for_filename(args.vlm_goal)
+    run_name = f"{args.env_id}__{args.exp_name}__{prompt_slug}__{args.seed}__{int(time.time())}"
     run_dir_base = _get_run_dir_base(args.run_dir_base)
     run_dir = os.path.join(run_dir_base, run_name)
     os.makedirs(run_dir, exist_ok=True)
@@ -560,10 +568,6 @@ if __name__ == "__main__":
     next_obs_np, _ = envs.reset(seed=args.seed)
     next_obs = torch.tensor(next_obs_np, dtype=torch.float32, device=device)
     next_done = torch.zeros(args.num_envs, device=device)
-
-    best_episodic_return = -float("inf")
-    model_save_dir = run_dir
-    best_model_path = os.path.join(model_save_dir, "best_model.pt")
 
     prev_rollout_observations: list[np.ndarray] = []
 
@@ -688,11 +692,6 @@ if __name__ == "__main__":
                         print(f"global_step={global_step}, episodic_return={ep_return:.3f}")
                         writer.add_scalar("charts/episodic_return", ep_return, global_step)
                         writer.add_scalar("charts/episodic_length", ep_length, global_step)
-
-                        if ep_return > best_episodic_return:
-                            best_episodic_return = ep_return
-                            torch.save(agent.state_dict(), best_model_path)
-                            print(f"--> New best model saved with return: {best_episodic_return:.2f}")
 
         prev_rollout_observations = current_rollout_observations
         rm_reward_mean = rewards.mean().item()

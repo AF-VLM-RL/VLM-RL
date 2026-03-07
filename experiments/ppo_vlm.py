@@ -21,6 +21,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from src.utils import sanitize_prompt_for_filename
 from src.wrappers import VLMRewardWrapper
 
 
@@ -151,7 +152,8 @@ if __name__ == "__main__":
     args.batch_size = int(args.num_envs * args.num_steps)
     args.minibatch_size = int(args.batch_size // args.num_minibatches)
     args.num_iterations = args.total_timesteps // args.batch_size
-    run_name = f"{args.env_id}__{args.exp_name}__{args.seed}__{int(time.time())}"
+    prompt_slug = sanitize_prompt_for_filename(args.vlm_goal)
+    run_name = f"{args.env_id}__{args.exp_name}__{prompt_slug}__{args.seed}__{int(time.time())}"
     if args.track:
         import wandb
 
@@ -217,13 +219,6 @@ if __name__ == "__main__":
     next_obs = torch.Tensor(next_obs).to(device)
     next_done = torch.zeros(args.num_envs).to(device)
 
-    # --- NEW: Setup best model tracking ---
-    best_episodic_return = -float("inf")
-    model_save_dir = f"runs/{run_name}"
-    os.makedirs(model_save_dir, exist_ok=True)
-    best_model_path = os.path.join(model_save_dir, "best_model.pt")
-    # --------------------------------------
-
     for iteration in range(1, args.num_iterations + 1):
         # Annealing the rate if instructed to do so.
         if args.anneal_lr:
@@ -266,12 +261,6 @@ if __name__ == "__main__":
                         print(f"global_step={global_step}, episodic_return={ep_return:.3f}")
                         writer.add_scalar("charts/episodic_return", ep_return, global_step)
                         writer.add_scalar("charts/episodic_length", ep_length, global_step)
-
-                        # --- NEW: Save the model if it's the best we've seen ---
-                        if ep_return > best_episodic_return:
-                            best_episodic_return = ep_return
-                            torch.save(agent.state_dict(), best_model_path)
-                            print(f"--> New best model saved with return: {best_episodic_return:.2f}")
 
         # bootstrap value if not done
         with torch.no_grad():

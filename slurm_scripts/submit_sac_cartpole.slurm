@@ -36,5 +36,8 @@ echo "Starting SAC CartPole training..."
 srun uv run python experiments/sac_continuous_action.py \
   --seed 1 \
   --env-id CartPole-v1 \
-  --total-timesteps 50000
+  --total-timesteps 50000 \
+  --track \
+  --capture-video \
+  --wandb-project-name "cleanrl-experiments"
 

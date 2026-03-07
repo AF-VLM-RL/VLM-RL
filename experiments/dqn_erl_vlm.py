@@ -32,6 +32,7 @@ if _CLEANRL_ROOT not in sys.path:
     sys.path.insert(0, _CLEANRL_ROOT)
 
 from cleanrl_utils.buffers import ReplayBuffer  # pyright: ignore[reportMissingImports]
+from src.utils import sanitize_prompt_for_filename
 
 if not os.environ.get("XDG_RUNTIME_DIR"):
     _xdg_runtime_dir = f"/tmp/xdg-runtime-{os.getuid()}"
@@ -524,7 +525,8 @@ def _get_run_dir_base(run_dir_base: Optional[str], project_root: str) -> str:
 if __name__ == "__main__":
     args = tyro.cli(Args)
     assert args.num_envs == 1, "vectorized envs are not supported at the moment"
-    run_name = f"{args.env_id}__{args.exp_name}__{args.seed}__{int(time.time())}"
+    prompt_slug = sanitize_prompt_for_filename(args.vlm_goal)
+    run_name = f"{args.env_id}__{args.exp_name}__{prompt_slug}__{args.seed}__{int(time.time())}"
     run_dir_base = _get_run_dir_base(args.run_dir_base, _PROJECT_ROOT)
     run_dir = os.path.join(run_dir_base, run_name)
     os.makedirs(run_dir, exist_ok=True)
@@ -589,8 +591,6 @@ if __name__ == "__main__":
         handle_timeout_termination=False,
     )
     start_time = time.time()
-    best_episodic_return = -float("inf")
-    best_model_path = os.path.join(run_dir, "best_model.pt")
 
     # TRY NOT TO MODIFY: start the game
     obs, _ = envs.reset(seed=args.seed)
@@ -725,11 +725,6 @@ if __name__ == "__main__":
                     writer.add_scalar("charts/episodic_return", ep_return, global_step)
                     writer.add_scalar("charts/episodic_length", ep_length, global_step)
 
-                    # --- NEW: Save the model if it's the best we've seen ---
-                    if ep_return > best_episodic_return:
-                        best_episodic_return = ep_return
-                        torch.save(q_network.state_dict(), best_model_path)
-                        print(f"--> New best model saved with return: {best_episodic_return:.2f}")
         # TRY NOT TO MODIFY: save data to replay buffer; handle `final_observation`
         real_next_obs = next_obs.copy()
         final_observations = infos.get("final_observation")

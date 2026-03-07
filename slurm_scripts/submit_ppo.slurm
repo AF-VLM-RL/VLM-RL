@@ -39,5 +39,5 @@ srun uv run python experiments/ppo.py \
   --total-timesteps 50000 \
   --track \
   --capture-video \
-  --wandb-project-name cleanrl-test-video
+  --wandb-project-name "cleanrl-experiments"
 

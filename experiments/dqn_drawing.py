@@ -179,8 +179,6 @@ if __name__ == "__main__":
 
     recent_returns = []
     max_recent = 20
-    best_episodic_return = -float("inf")
-    best_model_path = os.path.join(run_dir, "best_model.pt")
 
     start_time = time.time()
     obs, _ = envs.reset(seed=args.seed)
@@ -212,10 +210,6 @@ if __name__ == "__main__":
                         recent_returns.pop(0)
                     writer.add_scalar("charts/episodic_return", ep_ret, global_step)
                     writer.add_scalar("charts/episodic_length", ep_len, global_step)
-                    if ep_ret > best_episodic_return:
-                        best_episodic_return = ep_ret
-                        torch.save(q_network.state_dict(), best_model_path)
-                        print(f"--> New best model saved (return={best_episodic_return:.2f})")
         elif "episode" in infos:
             for i, done in enumerate(infos.get("_episode", [])):
                 if done:
@@ -226,10 +220,6 @@ if __name__ == "__main__":
                         recent_returns.pop(0)
                     writer.add_scalar("charts/episodic_return", ep_ret, global_step)
                     writer.add_scalar("charts/episodic_length", ep_len, global_step)
-                    if ep_ret > best_episodic_return:
-                        best_episodic_return = ep_ret
-                        torch.save(q_network.state_dict(), best_model_path)
-                        print(f"--> New best model saved (return={best_episodic_return:.2f})")
 
         real_next_obs = next_obs.copy()
         final_observations = infos.get("final_observation")

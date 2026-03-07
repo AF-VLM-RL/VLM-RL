@@ -17,6 +17,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from src.utils import sanitize_prompt_for_filename
 from src.wrappers import VLMRewardWrapper
 
 
@@ -78,21 +79,12 @@ class Args:
 
 def make_env(env_id, seed, idx, capture_video, run_name, vlm_goal, vlm_device):
     def thunk():
-        # 🔥 CRITICAL FIX: Every single environment gets rgb_array, no exceptions.
         env = gym.make(env_id, render_mode="rgb_array")
-        
-        # Only wrap with RecordVideo if it's the first environment and video is requested
         if capture_video and idx == 0:
             env = gym.wrappers.RecordVideo(env, f"videos/{run_name}")
-            
         env.action_space.seed(seed)
-
-        # 1. APPLY VLM WRAPPER FIRST (Overrides the environment reward)
         env = VLMRewardWrapper(env, text_goal=vlm_goal, device=vlm_device, skip_frames=2)
-        
-        # 2. APPLY STATS WRAPPER SECOND (Records the *new* VLM reward)
         env = gym.wrappers.RecordEpisodeStatistics(env)
-
         return env
 
     return thunk
@@ -133,7 +125,8 @@ if __name__ == "__main__":
     args.batch_size = int(args.num_envs * args.num_steps)
     args.minibatch_size = int(args.batch_size // args.num_minibatches)
     args.num_iterations = args.total_timesteps // args.batch_size
-    run_name = f"{args.env_id}__{args.exp_name}__{args.seed}__{int(time.time())}"
+    prompt_slug = sanitize_prompt_for_filename(args.vlm_goal)
+    run_name = f"{args.env_id}__{args.exp_name}__{prompt_slug}__{args.seed}__{int(time.time())}"
     if args.track:
         import wandb
 
@@ -159,11 +152,6 @@ if __name__ == "__main__":
     torch.backends.cudnn.deterministic = args.torch_deterministic
 
     device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")
-
-    # env setup
-    # envs = gym.vector.SyncVectorEnv(
-    #     [make_env(args.env_id, args.seed + i, i, args.capture_video, run_name) for i in range(args.num_envs)]
-    # )
 
     print(f"Creating {args.num_envs} environments with VLM Goal: '{args.vlm_goal}' on device: {args.vlm_device}")
     envs = gym.vector.SyncVectorEnv(
@@ -201,13 +189,6 @@ if __name__ == "__main__":
     next_obs = torch.Tensor(next_obs).to(device)
     next_done = torch.zeros(args.num_envs).to(device)
 
-    # --- NEW: Setup best model tracking ---
-    best_episodic_return = -float("inf")
-    model_save_dir = f"runs/{run_name}"
-    os.makedirs(model_save_dir, exist_ok=True)
-    best_model_path = os.path.join(model_save_dir, "best_model.pt")
-    # --------------------------------------
-
     for iteration in range(1, args.num_iterations + 1):
         # Annealing the rate if instructed to do so.
         if args.anneal_lr:
@@ -244,12 +225,6 @@ if __name__ == "__main__":
                         writer.add_scalar("charts/episodic_return", info["episode"]["r"], global_step)
                         writer.add_scalar("charts/episodic_length", info["episode"]["l"], global_step)
 
-                        # --- NEW: Save the model if it's the best we've seen ---
-                        if ep_return > best_episodic_return:
-                            best_episodic_return = ep_return
-                            torch.save(q_network.state_dict(), best_model_path)
-                            print(f"--> New best model saved with return: {best_episodic_return:.2f}")
-                    
             # --- NEW: Gymnasium >= 0.28 VectorEnv format ---
             elif "episode" in infos:
                 # '_episode' is a boolean array indicating which envs just terminated
@@ -260,13 +235,6 @@ if __name__ == "__main__":
                         print(f"global_step={global_step}, episodic_return={ep_return:.3f}")
                         writer.add_scalar("charts/episodic_return", ep_return, global_step)
                         writer.add_scalar("charts/episodic_length", ep_length, global_step)
-
-                        # --- NEW: Save the model if it's the best we've seen ---
-                        if ep_return > best_episodic_return:
-                            best_episodic_return = ep_return
-                            torch.save(q_network.state_dict(), best_model_path)
-                            print(f"--> New best model saved with return: {best_episodic_return:.2f}")
-            # -----------------------------------------------------------
 
         # Compute Q(lambda) targets
         with torch.no_grad():

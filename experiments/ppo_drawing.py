@@ -220,8 +220,6 @@ if __name__ == "__main__":
 
     recent_returns = []
     max_recent = 20
-    best_episodic_return = -float("inf")
-    best_model_path = os.path.join(run_dir, "best_model.pt")
 
     print(f"Starting training: {args.num_iterations} iterations, {args.total_timesteps} total steps")
     print(f"Progress will be logged every {args.log_freq} iterations")
@@ -259,10 +257,6 @@ if __name__ == "__main__":
                             recent_returns.pop(0)
                         writer.add_scalar("charts/episodic_return", ep_ret, global_step)
                         writer.add_scalar("charts/episodic_length", ep_len, global_step)
-                        if ep_ret > best_episodic_return:
-                            best_episodic_return = ep_ret
-                            torch.save(agent.state_dict(), best_model_path)
-                            print(f"--> New best model saved (return={best_episodic_return:.2f})")
             elif "episode" in infos:
                 for i, done in enumerate(infos.get("_episode", [])):
                     if done:
@@ -273,10 +267,6 @@ if __name__ == "__main__":
                             recent_returns.pop(0)
                         writer.add_scalar("charts/episodic_return", ep_ret, global_step)
                         writer.add_scalar("charts/episodic_length", ep_len, global_step)
-                        if ep_ret > best_episodic_return:
-                            best_episodic_return = ep_ret
-                            torch.save(agent.state_dict(), best_model_path)
-                            print(f"--> New best model saved (return={best_episodic_return:.2f})")
 
         with torch.no_grad():
             next_value = agent.get_value(next_obs).reshape(1, -1)
