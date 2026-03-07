@@ -14,7 +14,8 @@
 
 export SCRATCH_DIR="/scratch/gilbreth/sohn31"
 export PROJECT_DIR="$SCRATCH_DIR/VLM-RL-RUNS"
-mkdir -p "$PROJECT_DIR/hf_cache" "$PROJECT_DIR/uv_cache" "$PROJECT_DIR/logs"
+export VLM_RL_RUN_DIR="$PROJECT_DIR/runs"
+mkdir -p "$PROJECT_DIR/hf_cache" "$PROJECT_DIR/uv_cache" "$PROJECT_DIR/logs" "$VLM_RL_RUN_DIR"
 
 export HF_HOME="$PROJECT_DIR/hf_cache"
 export UV_CACHE_DIR="$PROJECT_DIR/uv_cache"

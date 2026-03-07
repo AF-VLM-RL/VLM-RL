@@ -1,3 +1,6 @@
 cleanrl/
 __pycache__/
 *.pyc
+videos/
+runs/
+wandb/

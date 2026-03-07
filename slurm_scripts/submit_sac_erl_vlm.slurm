@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=dqn_erl_vlm_training
-#SBATCH --output=/scratch/gilbreth/sohn31/logs/dqn_erl_vlm_%j.out
-#SBATCH --error=/scratch/gilbreth/sohn31/logs/dqn_erl_vlm_%j.err
+#SBATCH --job-name=sac_erl_vlm_training
+#SBATCH --output=/scratch/gilbreth/sohn31/logs/sac_erl_vlm_%j.out
+#SBATCH --error=/scratch/gilbreth/sohn31/logs/sac_erl_vlm_%j.err
 #SBATCH --account=ai-forge
 #SBATCH --partition=a100-40gb
 #SBATCH --qos=standby
@@ -31,15 +31,14 @@ echo "GPU Info: $(nvidia-smi --query-gpu=name --format=csv,noheader)"
 
 cd "$HOME/Group-VLM-RL"
 export UV_PROJECT_ENVIRONMENT="$PROJECT_DIR/venv"
-# Venv and runs live in scratch to avoid home quota
 uv sync
 
-echo "Starting DQN + ERL-VLM training..."
-srun uv run python experiments/dqn_erl_vlm.py \
+echo "Starting SAC + ERL-VLM training..."
+srun uv run python experiments/sac_erl_vlm.py \
   --seed 1 \
   --env-id CartPole-v1 \
   --total-timesteps 50000 \
-  --buffer-size 3000 \
-  --batch-size 64 \
+  --buffer-size 200000 \
+  --batch-size 128 \
   --vlm-goal "a pole balancing upright on a cart"
 

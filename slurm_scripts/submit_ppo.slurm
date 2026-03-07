@@ -8,8 +8,8 @@
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=32G
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=16G
 #SBATCH --time=04:00:00
 
 export SCRATCH_DIR="/scratch/gilbreth/sohn31"
@@ -36,5 +36,8 @@ echo "Starting PPO training..."
 srun uv run python experiments/ppo.py \
   --seed 1 \
   --env-id CartPole-v1 \
-  --total-timesteps 50000
+  --total-timesteps 50000 \
+  --track \
+  --capture-video \
+  --wandb-project-name cleanrl-test-video
 

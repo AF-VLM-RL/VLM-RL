@@ -72,6 +72,8 @@ class Args:
     """Number of VLM-rated samples to gather before PPO updates start"""
     initial_rm_pretrain_epochs: int = 20
     """RM pretraining epochs after initial annotation collection"""
+    run_dir_base: Optional[str] = None
+    """Base directory for runs (TensorBoard, models). If unset, uses VLM_RL_RUN_DIR, else PROJECT_DIR/runs when on cluster, else project runs/."""
 
     # Algorithm specific arguments
     env_id: str = "CartPole-v1"
@@ -483,12 +485,27 @@ class Agent(nn.Module):
         return action, probs.log_prob(action), probs.entropy(), self.critic(self._flatten_obs(x))
 
 
+def _get_run_dir_base(run_dir_base: Optional[str]) -> str:
+    """Resolve runs base: explicit arg > VLM_RL_RUN_DIR > PROJECT_DIR/runs > project runs/."""
+    if run_dir_base is not None:
+        return run_dir_base
+    if base := os.environ.get("VLM_RL_RUN_DIR"):
+        return base
+    if project_dir := os.environ.get("PROJECT_DIR"):
+        return os.path.join(project_dir, "runs")
+    _project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    return os.path.join(_project_root, "runs")
+
+
 if __name__ == "__main__":
     args = tyro.cli(Args)
     args.batch_size = int(args.num_envs * args.num_steps)
     args.minibatch_size = int(args.batch_size // args.num_minibatches)
     args.num_iterations = args.total_timesteps // args.batch_size
     run_name = f"{args.env_id}__{args.exp_name}__{args.seed}__{int(time.time())}"
+    run_dir_base = _get_run_dir_base(args.run_dir_base)
+    run_dir = os.path.join(run_dir_base, run_name)
+    os.makedirs(run_dir, exist_ok=True)
     if args.track:
         import wandb
 
@@ -501,7 +518,7 @@ if __name__ == "__main__":
             monitor_gym=True,
             save_code=True,
         )
-    writer = SummaryWriter(f"runs/{run_name}")
+    writer = SummaryWriter(run_dir)
     writer.add_text(
         "hyperparameters",
         "|param|value|\n|-|-|\n%s" % ("\n".join([f"|{key}|{value}|" for key, value in vars(args).items()])),
@@ -545,8 +562,7 @@ if __name__ == "__main__":
     next_done = torch.zeros(args.num_envs, device=device)
 
     best_episodic_return = -float("inf")
-    model_save_dir = f"runs/{run_name}"
-    os.makedirs(model_save_dir, exist_ok=True)
+    model_save_dir = run_dir
     best_model_path = os.path.join(model_save_dir, "best_model.pt")
 
     prev_rollout_observations: list[np.ndarray] = []

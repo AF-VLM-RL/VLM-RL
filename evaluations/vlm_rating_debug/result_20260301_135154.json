@@ -1,0 +1,55 @@
+{
+  "timestamp": "20260301_135154",
+  "model_name": "Qwen/Qwen3-VL-8B-Instruct",
+  "device": "cuda",
+  "goal": "a pole balancing upright on a cart",
+  "num_images": 4,
+  "config": {
+    "vlm_do_sample": true,
+    "vlm_temperature": 0.2,
+    "vlm_top_p": 0.9,
+    "vlm_collapse_threshold": 0.8
+  },
+  "items": [
+    {
+      "index": 0,
+      "source": "CartPole-v1 (captured #1)",
+      "input_image": "evaluations/vlm_rating_debug/input_20260301_135154_000.png",
+      "annotated_image": "evaluations/vlm_rating_debug/annotated_20260301_135154_000.png",
+      "rating": 1,
+      "raw_score": 1.0,
+      "description": "The pole is leaning significantly to one side, indicating it is falling and unstable.",
+      "raw_text": "Description: The pole is leaning significantly to one side, indicating it is falling and unstable.\nRating: 1"
+    },
+    {
+      "index": 1,
+      "source": "CartPole-v1 (captured #2)",
+      "input_image": "evaluations/vlm_rating_debug/input_20260301_135154_001.png",
+      "annotated_image": "evaluations/vlm_rating_debug/annotated_20260301_135154_001.png",
+      "rating": 5,
+      "raw_score": 5.0,
+      "description": "The pole is standing vertically above the cart, appearing stable and upright.",
+      "raw_text": "Description: The pole is standing vertically above the cart, appearing stable and upright.\nRating: 5"
+    },
+    {
+      "index": 2,
+      "source": "CartPole-v1 (captured #3)",
+      "input_image": "evaluations/vlm_rating_debug/input_20260301_135154_002.png",
+      "annotated_image": "evaluations/vlm_rating_debug/annotated_20260301_135154_002.png",
+      "rating": 5,
+      "raw_score": 5.0,
+      "description": "The pole is standing vertically above the cart, appearing stable and upright.",
+      "raw_text": "Description: The pole is standing vertically above the cart, appearing stable and upright.\nRating: 5"
+    },
+    {
+      "index": 3,
+      "source": "CartPole-v1 (captured #4)",
+      "input_image": "evaluations/vlm_rating_debug/input_20260301_135154_003.png",
+      "annotated_image": "evaluations/vlm_rating_debug/annotated_20260301_135154_003.png",
+      "rating": 2,
+      "raw_score": 2.0,
+      "description": "The pole is leaning significantly to one side, indicating instability.",
+      "raw_text": "Description: The pole is leaning significantly to one side, indicating instability.\nRating: 2"
+    }
+  ]
+}

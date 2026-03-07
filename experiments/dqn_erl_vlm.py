@@ -31,7 +31,7 @@ if _PROJECT_ROOT not in sys.path:
 if _CLEANRL_ROOT not in sys.path:
     sys.path.insert(0, _CLEANRL_ROOT)
 
-from cleanrl_utils.buffers import ReplayBuffer
+from cleanrl_utils.buffers import ReplayBuffer  # pyright: ignore[reportMissingImports]
 
 if not os.environ.get("XDG_RUNTIME_DIR"):
     _xdg_runtime_dir = f"/tmp/xdg-runtime-{os.getuid()}"
@@ -91,6 +91,12 @@ class Args:
     """Number of VLM-rated samples to gather before Q-learning updates start"""
     initial_rm_pretrain_epochs: int = 20
     """RM pretraining epochs after initial annotation collection"""
+    warmstart_dataset_path: str = "runs/warmstart_datasets/dqn_erl_vlm_cartpole.npz"
+    """Relative or absolute path for persisted ERL warm-start annotations"""
+    warmstart_autosave_interval: int = 1000
+    """Save annotation cache every N steps when new labels were added (0 disables)"""
+    run_dir_base: Optional[str] = None
+    """Base directory for runs (TensorBoard, models). If unset, uses VLM_RL_RUN_DIR, else PROJECT_DIR/runs when on cluster, else project runs/."""
 
     # Algorithm specific arguments
     env_id: str = "CartPole-v1"
@@ -235,6 +241,52 @@ class ERLDataset:
             labels = [labels[i] for i in inds]
 
         return np.stack(samples, axis=0), np.array(labels, dtype=np.float32)
+
+    def save_npz(self, path: str) -> int:
+        all_obs = []
+        all_ratings = []
+        for rating in range(1, 6):
+            bucket = self.buckets[rating]
+            all_obs.extend(bucket)
+            all_ratings.extend([rating] * len(bucket))
+
+        parent_dir = os.path.dirname(path)
+        if parent_dir:
+            os.makedirs(parent_dir, exist_ok=True)
+        if len(all_obs) == 0:
+            np.savez_compressed(
+                path,
+                observations=np.empty((0,), dtype=np.uint8),
+                ratings=np.empty((0,), dtype=np.int64),
+            )
+            return 0
+
+        obs_np = np.stack(all_obs, axis=0)
+        ratings_np = np.asarray(all_ratings, dtype=np.int64)
+        np.savez_compressed(path, observations=obs_np, ratings=ratings_np)
+        return int(ratings_np.shape[0])
+
+    def load_npz(self, path: str, max_samples: Optional[int] = None) -> int:
+        if not os.path.exists(path):
+            return 0
+
+        data = np.load(path)
+        if "observations" not in data or "ratings" not in data:
+            return 0
+
+        observations = data["observations"]
+        ratings = data["ratings"]
+        total = min(len(observations), len(ratings))
+        if max_samples is not None:
+            total = min(total, max_samples)
+
+        loaded = 0
+        for i in range(total):
+            rating = int(ratings[i])
+            if 1 <= rating <= 5:
+                self.buckets[rating].append(np.array(observations[i], copy=True))
+                loaded += 1
+        return loaded
 
 
 def train_reward_model(
@@ -458,14 +510,26 @@ def annotate_observation_batch(observations: list[np.ndarray], args: Args):
     return discrete_ratings
 
 
+def _get_run_dir_base(run_dir_base: Optional[str], project_root: str) -> str:
+    """Resolve runs base: explicit arg > VLM_RL_RUN_DIR > PROJECT_DIR/runs > project runs/."""
+    if run_dir_base is not None:
+        return run_dir_base
+    if base := os.environ.get("VLM_RL_RUN_DIR"):
+        return base
+    if project_dir := os.environ.get("PROJECT_DIR"):
+        return os.path.join(project_dir, "runs")
+    return os.path.join(project_root, "runs")
+
+
 if __name__ == "__main__":
     args = tyro.cli(Args)
     assert args.num_envs == 1, "vectorized envs are not supported at the moment"
     run_name = f"{args.env_id}__{args.exp_name}__{args.seed}__{int(time.time())}"
-    run_dir = os.path.join("runs", run_name)
+    run_dir_base = _get_run_dir_base(args.run_dir_base, _PROJECT_ROOT)
+    run_dir = os.path.join(run_dir_base, run_name)
     os.makedirs(run_dir, exist_ok=True)
     if args.track:
-        import wandb
+        import wandb  # pyright: ignore[reportMissingImports]
 
         wandb.init(
             project=args.wandb_project_name,
@@ -505,6 +569,17 @@ if __name__ == "__main__":
     rm_optimizer = optim.Adam(reward_model.parameters(), lr=args.rm_lr)
     rating_dataset = ERLDataset()
     rm_criterion = nn.L1Loss()
+    warmstart_dataset_path = (
+        args.warmstart_dataset_path
+        if os.path.isabs(args.warmstart_dataset_path)
+        else os.path.join(_PROJECT_ROOT, args.warmstart_dataset_path)
+    )
+    loaded_annotations = rating_dataset.load_npz(warmstart_dataset_path)
+    if loaded_annotations > 0:
+        print(
+            f"Loaded {loaded_annotations} warm-start annotations from {warmstart_dataset_path}. "
+            f"Current dataset size={len(rating_dataset)}"
+        )
 
     rb = ReplayBuffer(
         args.buffer_size,
@@ -522,13 +597,18 @@ if __name__ == "__main__":
 
     # Warm-start: gather annotated data before Q-learning updates start.
     initial_annotations = 0
-    if args.initial_annotation_target > 0:
-        print(f"Starting initial annotation warmup for {args.initial_annotation_target} samples...")
+    remaining_warmstart_target = max(0, args.initial_annotation_target - len(rating_dataset))
+    if remaining_warmstart_target > 0:
+        print(
+            "Starting initial annotation warmup for "
+            f"{remaining_warmstart_target} additional samples "
+            f"(target={args.initial_annotation_target}, loaded={loaded_annotations})..."
+        )
         collected_ratings = []
-        while initial_annotations < args.initial_annotation_target:
+        while initial_annotations < remaining_warmstart_target:
             actions = np.array([envs.single_action_space.sample() for _ in range(envs.num_envs)])
             next_obs, _, terminations, truncations, _ = envs.step(actions)
-            remaining = args.initial_annotation_target - initial_annotations
+            remaining = remaining_warmstart_target - initial_annotations
             obs_batch = next_obs[:remaining]
             ratings = annotate_observation_batch([o for o in obs_batch], args)
             for sampled, rating in zip(obs_batch, ratings):
@@ -541,9 +621,17 @@ if __name__ == "__main__":
                 obs, _ = envs.reset()
 
             if initial_annotations % max(64, args.rating_batch_size) == 0:
-                print(f"Warmup annotations collected: {initial_annotations}/{args.initial_annotation_target}")
+                print(f"Warmup annotations collected: {initial_annotations}/{remaining_warmstart_target}")
 
         initial_mean_rating = float(np.mean(collected_ratings)) if collected_ratings else 0.0
+    else:
+        initial_mean_rating = 0.0
+        print(
+            "Warm-start target already satisfied by cached dataset: "
+            f"{len(rating_dataset)}/{args.initial_annotation_target}"
+        )
+
+    if len(rating_dataset) > 0 and args.initial_rm_pretrain_epochs > 0:
         pretrain_loss = train_reward_model(
             reward_model=reward_model,
             rm_optimizer=rm_optimizer,
@@ -557,9 +645,16 @@ if __name__ == "__main__":
             "Initial RM pretraining complete: "
             f"dataset={len(rating_dataset)} mean_rating={initial_mean_rating:.2f} pretrain_loss={pretrain_loss:.4f}"
         )
-        writer.add_scalar("erl/initial_annotations", initial_annotations, 0)
-        writer.add_scalar("erl/initial_mean_vlm_rating", initial_mean_rating, 0)
-        writer.add_scalar("erl/initial_pretrain_loss", pretrain_loss, 0)
+    else:
+        pretrain_loss = 0.0
+
+    writer.add_scalar("erl/initial_loaded_annotations", loaded_annotations, 0)
+    writer.add_scalar("erl/initial_annotations", initial_annotations, 0)
+    writer.add_scalar("erl/initial_mean_vlm_rating", initial_mean_rating, 0)
+    writer.add_scalar("erl/initial_pretrain_loss", pretrain_loss, 0)
+
+    cached_size = rating_dataset.save_npz(warmstart_dataset_path)
+    print(f"Saved warm-start annotation cache ({cached_size} samples) to {warmstart_dataset_path}")
 
     recent_observations: list[np.ndarray] = []
 
@@ -589,6 +684,9 @@ if __name__ == "__main__":
                 rating_dataset.add(sampled, rating)
             annotations_added = len(sampled_ratings)
             mean_vlm_rating = float(np.mean(sampled_ratings)) if sampled_ratings else 0.0
+            if args.warmstart_autosave_interval > 0 and global_step % args.warmstart_autosave_interval == 0:
+                cached_size = rating_dataset.save_npz(warmstart_dataset_path)
+                print(f"Autosaved warm-start cache ({cached_size} samples) at step {global_step}")
 
         # Phase B: train distilled reward model periodically.
         rm_loss_value = 0.0
@@ -634,9 +732,15 @@ if __name__ == "__main__":
                         print(f"--> New best model saved with return: {best_episodic_return:.2f}")
         # TRY NOT TO MODIFY: save data to replay buffer; handle `final_observation`
         real_next_obs = next_obs.copy()
+        final_observations = infos.get("final_observation")
+        final_observation_mask = infos.get("_final_observation")
         for idx, trunc in enumerate(truncations):
-            if trunc:
-                real_next_obs[idx] = infos["final_observation"][idx]
+            if not trunc:
+                continue
+            if final_observations is None:
+                continue
+            if final_observation_mask is None or final_observation_mask[idx]:
+                real_next_obs[idx] = final_observations[idx]
         rb.add(obs, real_next_obs, actions, rewards, terminations, infos)
 
         # TRY NOT TO MODIFY: CRUCIAL step easy to overlook
@@ -678,11 +782,14 @@ if __name__ == "__main__":
                         args.tau * q_network_param.data + (1.0 - args.tau) * target_network_param.data
                     )
 
+    final_cached_size = rating_dataset.save_npz(warmstart_dataset_path)
+    print(f"Saved final warm-start annotation cache ({final_cached_size} samples) to {warmstart_dataset_path}")
+
     if args.save_model:
         model_path = os.path.join(run_dir, f"{args.exp_name}.cleanrl_model")
         torch.save(q_network.state_dict(), model_path)
         print(f"model saved to {model_path}")
-        from cleanrl_utils.evals.dqn_eval import evaluate
+        from cleanrl_utils.evals.dqn_eval import evaluate  # pyright: ignore[reportMissingImports]
 
         episodic_returns = evaluate(
             model_path,
@@ -698,7 +805,7 @@ if __name__ == "__main__":
             writer.add_scalar("eval/episodic_return", episodic_return, idx)
 
         if args.upload_model:
-            from cleanrl_utils.huggingface import push_to_hub
+            from cleanrl_utils.huggingface import push_to_hub  # pyright: ignore[reportMissingImports]
 
             repo_name = f"{args.env_id}-{args.exp_name}-seed{args.seed}"
             repo_id = f"{args.hf_entity}/{repo_name}" if args.hf_entity else repo_name

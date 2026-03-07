@@ -1,8 +1,10 @@
 # docs and experiment results can be found at https://docs.cleanrl.dev/rl-algorithms/dqn/#dqnpy
 import os
 import random
+import sys
 import time
 from dataclasses import dataclass
+from typing import Optional
 
 import gymnasium as gym
 import numpy as np
@@ -13,7 +15,14 @@ import torch.optim as optim
 import tyro
 from torch.utils.tensorboard import SummaryWriter
 
-from cleanrl_utils.buffers import ReplayBuffer
+_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+_CLEANRL_ROOT = os.path.join(_PROJECT_ROOT, "cleanrl")
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
+if _CLEANRL_ROOT not in sys.path:
+    sys.path.insert(0, _CLEANRL_ROOT)
+
+from cleanrl_utils.buffers import ReplayBuffer  # pyright: ignore[reportMissingImports]
 
 
 @dataclass
@@ -30,7 +39,7 @@ class Args:
     """if toggled, this experiment will be tracked with Weights and Biases"""
     wandb_project_name: str = "cleanRL"
     """the wandb's project name"""
-    wandb_entity: str = None
+    wandb_entity: Optional[str] = None
     """the entity (team) of wandb's project"""
     capture_video: bool = False
     """whether to capture videos of the agent performances (check out `videos` folder)"""
@@ -113,7 +122,7 @@ if __name__ == "__main__":
     assert args.num_envs == 1, "vectorized envs are not supported at the moment"
     run_name = f"{args.env_id}__{args.exp_name}__{args.seed}__{int(time.time())}"
     if args.track:
-        import wandb
+        import wandb  # pyright: ignore[reportMissingImports]
 
         wandb.init(
             project=args.wandb_project_name,
@@ -180,11 +189,28 @@ if __name__ == "__main__":
                     writer.add_scalar("charts/episodic_return", info["episode"]["r"], global_step)
                     writer.add_scalar("charts/episodic_length", info["episode"]["l"], global_step)
 
+        # --- NEW: Gymnasium >= 0.28 VectorEnv format ---
+        elif "episode" in infos:
+            # '_episode' is a boolean array indicating which envs just terminated
+            for i, done in enumerate(infos.get("_episode", [])):
+                if done:
+                    ep_return = infos["episode"]["r"][i].item() # .item() extracts the float
+                    ep_length = infos["episode"]["l"][i].item()
+                    print(f"global_step={global_step}, episodic_return={ep_return:.3f}")
+                    writer.add_scalar("charts/episodic_return", ep_return, global_step)
+                    writer.add_scalar("charts/episodic_length", ep_length, global_step)
+
         # TRY NOT TO MODIFY: save data to reply buffer; handle `final_observation`
         real_next_obs = next_obs.copy()
+        final_observations = infos.get("final_observation")
+        final_observation_mask = infos.get("_final_observation")
         for idx, trunc in enumerate(truncations):
-            if trunc:
-                real_next_obs[idx] = infos["final_observation"][idx]
+            if not trunc:
+                continue
+            if final_observations is None:
+                continue
+            if final_observation_mask is None or final_observation_mask[idx]:
+                real_next_obs[idx] = final_observations[idx]
         rb.add(obs, real_next_obs, actions, rewards, terminations, infos)
 
         # TRY NOT TO MODIFY: CRUCIAL step easy to overlook
@@ -222,7 +248,7 @@ if __name__ == "__main__":
         model_path = f"runs/{run_name}/{args.exp_name}.cleanrl_model"
         torch.save(q_network.state_dict(), model_path)
         print(f"model saved to {model_path}")
-        from cleanrl_utils.evals.dqn_eval import evaluate
+        from cleanrl_utils.evals.dqn_eval import evaluate  # pyright: ignore[reportMissingImports]
 
         episodic_returns = evaluate(
             model_path,
@@ -238,7 +264,7 @@ if __name__ == "__main__":
             writer.add_scalar("eval/episodic_return", episodic_return, idx)
 
         if args.upload_model:
-            from cleanrl_utils.huggingface import push_to_hub
+            from cleanrl_utils.huggingface import push_to_hub  # pyright: ignore[reportMissingImports]
 
             repo_name = f"{args.env_id}-{args.exp_name}-seed{args.seed}"
             repo_id = f"{args.hf_entity}/{repo_name}" if args.hf_entity else repo_name
