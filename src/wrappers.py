@@ -62,26 +62,24 @@ class VLMRewardWrapper(gym.Wrapper):
         return obs, self.last_reward, terminated, truncated, info
 
     def compute_vlm_reward(self, frame_array):
-        # 1. Transfer & Format (H, W, C) -> (1, C, H, W)
-        # Create tensor directly on device
-        img = torch.tensor(frame_array, device=self.device, dtype=torch.float16)
-        img = img.permute(2, 0, 1).unsqueeze(0) 
+        # Make sure the numpy array has positive, contiguous strides
+        frame_array = np.asarray(frame_array)
+        frame_array = np.ascontiguousarray(frame_array)
 
-        # 2. Resize to 224x224 (Bilinear)
-        # Note: We scale to 0-1 implicitly by dividing during normalization if needed, 
-        # but standard CLIP expects 0-1 input range.
+        # (H, W, C) -> torch tensor
+        img = torch.from_numpy(frame_array).to(self.device, dtype=torch.float16)
+        img = img.permute(2, 0, 1).unsqueeze(0)
+
+        # Scale to [0, 1] and resize
         img = img / 255.0
-        img = F.interpolate(img, size=(224, 224), mode='bilinear', align_corners=False)
-        
-        # 3. Manual Normalization (No torchvision needed)
+        img = F.interpolate(img, size=(224, 224), mode="bilinear", align_corners=False)
+
+        # Normalize for CLIP
         img = (img - self.mean) / self.std
 
-        # 4. Inference (FP16)
         with torch.no_grad():
             img_feats = self.model.get_image_features(img)
             img_feats = img_feats / img_feats.norm(p=2, dim=-1, keepdim=True)
-            
-            # Dot product
             similarity = (img_feats @ self.text_features.T).item()
-            
+
         return similarity
