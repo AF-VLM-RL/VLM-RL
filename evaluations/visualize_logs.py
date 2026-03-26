@@ -23,11 +23,6 @@ def moving_average(values, window):
 
 
 def parse_log_file(log_path):
-    """
-    Extract lines like:
-      global_step=37, episodic_return=[-36.6487]
-      global_step=15, episodic_return=4.427
-    """
     pattern = re.compile(
         r"global_step\s*=\s*(\d+)\s*,\s*episodic_return\s*=\s*\[?\s*([-+]?\d*\.?\d+(?:[eE][-+]?\d+)?)\s*\]?"
     )
@@ -57,7 +52,7 @@ def make_plot(steps, rewards, output_path, smooth_window=15, title=None):
     plt.plot(steps, rewards, alpha=0.35, linewidth=1.2, label="Raw episodic return")
 
     # Smoothed curve
-    plt.plot(steps, smoothed, linewidth=2.5, label=f"Smoothed (window={smooth_window})")
+    plt.plot(steps, smoothed, linewidth=2.5, label=f"Smoothed episodic return (window={smooth_window})")
 
     plt.xlabel("global_step", fontsize=12)
     plt.ylabel("episode_reward", fontsize=12)
@@ -69,7 +64,6 @@ def make_plot(steps, rewards, output_path, smooth_window=15, title=None):
     plt.savefig(output_path, bbox_inches="tight")
     plt.close()
 
-
 def main():
     parser = argparse.ArgumentParser(
         description="Plot global_step vs episodic_return from a training log."
@@ -78,8 +72,8 @@ def main():
     parser.add_argument(
         "-o",
         "--output",
-        default="images/training_curve.png",
-        help="Output image filename",
+        default=None,
+        help="Output image filename (default: images/<input_filename>.png)",
     )
     parser.add_argument(
         "-w",
@@ -94,6 +88,10 @@ def main():
         help="Plot title",
     )
     args = parser.parse_args()
+
+    if args.output is None:
+        stem = Path(args.input_file).stem
+        args.output = f"images/{stem}.png"
 
     steps, rewards = parse_log_file(args.input_file)
     make_plot(
