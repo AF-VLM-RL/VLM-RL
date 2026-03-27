@@ -28,7 +28,11 @@ from src.wrappers import (
     score_rollout_composite_images,
     score_rollout_composite_images_clip,
     score_rollout_composite_images_clip_multi_goal,
+    score_rollout_frame_sequences_clip,
+    score_rollout_frame_sequences_clip_multi_goal,
     score_rollout_frame_sequences_video,
+    score_rollout_frame_sequences_xclip,
+    score_rollout_frame_sequences_xclip_multi_goal,
 )
 
 
@@ -58,8 +62,9 @@ class Args:
     """the user or org name of the model repository from the Hugging Face Hub"""
 
     # VLM arguments
-    vlm_backend: Literal["generate", "clip"] = "generate"
-    """`generate`: Qwen2-VL (slow, rich). `clip`: CLIP image–text similarity (fast, batched)."""
+    vlm_backend: Literal["generate", "clip", "xclip"] = "generate"
+    """`generate`: Qwen2-VL (slow, rich). `clip`: CLIP image–text similarity (fast, batched).
+    `xclip`: X-CLIP video–text similarity (fast-ish, uses frame sequences as video)."""
     vlm_input_format: Literal["image", "video"] = "image"
     """For vlm_backend=generate: `image` uses strip/grid composite; `video` uses Qwen native video input."""
     vlm_video_fps: float = 8.0
@@ -74,6 +79,8 @@ class Args:
     """Hugging Face model id when vlm_backend=generate"""
     clip_model_name: str = "openai/clip-vit-base-patch32"
     """Hugging Face model id when vlm_backend=clip"""
+    xclip_model_name: str = "microsoft/xclip-base-patch32"
+    """Hugging Face model id when vlm_backend=xclip"""
     vlm_skip_frames: int = 16
     """(Deprecated) Kept for backwards compatibility."""
     vlm_rollout_chunk_size: int = 32
@@ -83,7 +90,7 @@ class Args:
     vlm_reward_scale: float = 1.0
     """Scale factor for VLM reward (1-5 -> 0-1 by default)"""
     vlm_layout: str = "grid"
-    """Frame layout: 'strip' (left-to-right, sequential) or 'grid' (NxN)"""
+    """Frame layout: 'strip' (composite), 'grid' (composite), or 'pil' (per-frame CLIP encoding)."""
     vlm_grid_size: int = 4
     """Grid size when vlm_layout='grid' (4 -> 4x4 = 16 frames)"""
     vlm_frame_stride: int = 5
@@ -345,7 +352,33 @@ if __name__ == "__main__":
             chunk_sz = max(1, len(flat_images))
         if args.vlm_backend == "clip":
             goals = args.vlm_goals if args.vlm_goals else [args.vlm_goal]
-            if len(goals) > 1:
+            if args.vlm_layout == "pil":
+                flat_frame_sequences = [
+                    rollout_frame_sequences[s][e]
+                    for s in range(args.num_steps)
+                    for e in range(args.num_envs)
+                ]
+                if len(goals) > 1:
+                    weights = args.vlm_goal_weights if args.vlm_goal_weights else [1.0 / len(goals)] * len(goals)
+                    r_flat = score_rollout_frame_sequences_clip_multi_goal(
+                        flat_frame_sequences,
+                        goals=goals,
+                        goal_weights=weights,
+                        clip_model_name=args.clip_model_name,
+                        device=vlm_device,
+                        reward_scale=args.vlm_reward_scale,
+                        chunk_size=chunk_sz,
+                    )
+                else:
+                    r_flat = score_rollout_frame_sequences_clip(
+                        flat_frame_sequences,
+                        goal=goals[0],
+                        clip_model_name=args.clip_model_name,
+                        device=vlm_device,
+                        reward_scale=args.vlm_reward_scale,
+                        chunk_size=chunk_sz,
+                    )
+            elif len(goals) > 1:
                 weights = args.vlm_goal_weights if args.vlm_goal_weights else [1.0 / len(goals)] * len(goals)
                 r_flat = score_rollout_composite_images_clip_multi_goal(
                     flat_images,
@@ -361,6 +394,33 @@ if __name__ == "__main__":
                     flat_images,
                     goal=goals[0],
                     clip_model_name=args.clip_model_name,
+                    device=vlm_device,
+                    reward_scale=args.vlm_reward_scale,
+                    chunk_size=chunk_sz,
+                )
+        elif args.vlm_backend == "xclip":
+            goals = args.vlm_goals if args.vlm_goals else [args.vlm_goal]
+            flat_frame_sequences = [
+                rollout_frame_sequences[s][e]
+                for s in range(args.num_steps)
+                for e in range(args.num_envs)
+            ]
+            if len(goals) > 1:
+                weights = args.vlm_goal_weights if args.vlm_goal_weights else [1.0 / len(goals)] * len(goals)
+                r_flat = score_rollout_frame_sequences_xclip_multi_goal(
+                    flat_frame_sequences,
+                    goals=goals,
+                    goal_weights=weights,
+                    xclip_model_name=args.xclip_model_name,
+                    device=vlm_device,
+                    reward_scale=args.vlm_reward_scale,
+                    chunk_size=chunk_sz,
+                )
+            else:
+                r_flat = score_rollout_frame_sequences_xclip(
+                    flat_frame_sequences,
+                    goal=goals[0],
+                    xclip_model_name=args.xclip_model_name,
                     device=vlm_device,
                     reward_scale=args.vlm_reward_scale,
                     chunk_size=chunk_sz,

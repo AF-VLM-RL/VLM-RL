@@ -34,45 +34,20 @@ cd "$HOME/Group-VLM-RL"
 export UV_PROJECT_ENVIRONMENT="$PROJECT_DIR/venv"
 uv sync
 
-# echo "Starting PPO continuous action + VLM (Walker2d-v4, CLIP multi-goal weighted reward)..."
-# srun uv run python experiments/ppo_continuous_action_vlm.py \
-#   --seed 1 \
-#   --env-id Walker2d-v4 \
-#   --num-envs 8 \
-#   --num-steps 256 \
-#   --total-timesteps 1000000 \
-#   --vlm-backend clip \
-#   --vlm-goals "a robot standing tall and upright" "a robot taking a wide stride to the right" "a robot moving right with a sharply bent, raised knee" \
-#   --vlm-goal-weights 0.1 0.1 0.8 \
-#   --clip-model-name "openai/clip-vit-base-patch32" \
-#   --vlm-layout grid \
-#   --vlm-grid-size 8 \
-#   --vlm-max-frames 8 \
-#   --vlm-rollout-chunk-size 512 \
-#   --update-epochs 5 \
-#   --track \
-#   --wandb-project-name "cleanrl-experiments" \
-#   --capture-video
-
-
-echo "Starting PPO continuous action + VLM (Walker2d-v4, Qwen video-input reward)..."
-# NOTE: requires qwen-vl-utils in the environment for --vlm-input-format video.
-srun uv run python experiments/ppo_continuous_action_vlm.py \
+echo "Starting PPO continuous action + VLM (Walker2d-v4, X-CLIP video-text reward)..."
+uv run python experiments/ppo_continuous_action_vlm.py \
   --seed 1 \
   --env-id Walker2d-v4 \
   --num-envs 8 \
   --num-steps 256 \
   --total-timesteps 1000000 \
-  --vlm-backend generate \
-  --vlm-input-format video \
-  --vlm-video-fps 8.0 \
-  --vlm-goal "a 2D robot with a small central torso and two jointed legs but no arms, staying upright and walking steadily to the right over time without falling" \
-  --vlm-model-name "Qwen/Qwen2-VL-72B-Instruct" \
-  --vlm-layout grid \
-  --vlm-grid-size 4 \
-  --vlm-max-frames 16 \
+  --vlm-backend xclip \
+  --vlm-goals "a robot walking to the right with a smooth, steady gait" \
+  --vlm-goal-weights 1.0 \
+  --xclip-model-name "microsoft/xclip-base-patch32" \
+  --vlm-max-frames 8 \
   --vlm-frame-stride 5 \
-  --vlm-rollout-chunk-size 32 \
+  --vlm-rollout-chunk-size 512 \
   --update-epochs 5 \
   --track \
   --wandb-project-name "cleanrl-experiments" \

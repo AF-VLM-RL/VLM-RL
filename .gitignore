@@ -4,3 +4,7 @@ __pycache__/
 videos/
 runs/
 wandb/
+vlm_pair_debug/
+vlm_reward_probe/
+logs/
+pref_logs/

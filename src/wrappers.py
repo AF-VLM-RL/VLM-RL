@@ -13,6 +13,8 @@ from transformers import (
     CLIPModel,
     CLIPProcessor,
     CLIPTokenizer,
+    XCLIPModel,
+    XCLIPProcessor,
 )
 
 try:
@@ -368,6 +370,273 @@ _CLIP_ROLLOUT_DEVICE: Optional[torch.device] = None
 _CLIP_ROLLOUT_MODEL_ID: Optional[str] = None
 
 
+# ---------------------------------------------------------------------------
+# X-CLIP batched rollout scoring (video-text contrastive, no generation)
+# ---------------------------------------------------------------------------
+
+_XCLIP_ROLLOUT_MODEL: Optional[XCLIPModel] = None
+_XCLIP_ROLLOUT_PROCESSOR: Optional[XCLIPProcessor] = None
+_XCLIP_ROLLOUT_DEVICE: Optional[torch.device] = None
+_XCLIP_ROLLOUT_MODEL_ID: Optional[str] = None
+
+
+def _resample_video_frames_uniform(
+    frames: List[np.ndarray], target_frames: int
+) -> List[np.ndarray]:
+    """Return exactly target_frames via uniform temporal sampling (with repeat for short clips)."""
+    target_frames = max(1, int(target_frames))
+    if not frames:
+        return [np.zeros((224, 224, 3), dtype=np.uint8) for _ in range(target_frames)]
+
+    n = len(frames)
+    if n == target_frames:
+        return list(frames)
+
+    # Evenly sample indices from [0, n-1], including both ends.
+    idx = np.linspace(0, n - 1, num=target_frames)
+    idx = np.clip(np.round(idx).astype(np.int64), 0, n - 1)
+    return [np.asarray(frames[i]).copy() for i in idx]
+
+
+def _prepare_xclip_videos(
+    frame_sequences: List[List[np.ndarray]], target_frames: int = 8
+) -> List[List[Image.Image]]:
+    """Convert ragged frame sequences to fixed-length PIL clips for X-CLIP batching."""
+    videos: List[List[Image.Image]] = []
+    for seq in frame_sequences:
+        sampled = _resample_video_frames_uniform(seq, target_frames=target_frames)
+        clip = [Image.fromarray(np.asarray(f).astype(np.uint8)).convert("RGB") for f in sampled]
+        videos.append(clip)
+    return videos
+
+
+def _xclip_video_features_from_forward(
+    model: XCLIPModel, pixel_values: torch.Tensor, device: torch.device
+) -> torch.Tensor:
+    """Get video embeddings through model.forward with robust fallbacks."""
+    batch_size = int(pixel_values.shape[0])
+    dummy_ids = torch.zeros((batch_size, 1), dtype=torch.long, device=device)
+    dummy_mask = torch.ones((batch_size, 1), dtype=torch.long, device=device)
+
+    outputs = model(
+        input_ids=dummy_ids,
+        attention_mask=dummy_mask,
+        pixel_values=pixel_values,
+        return_dict=True,
+    )
+    if hasattr(outputs, "video_embeds") and outputs.video_embeds is not None:
+        return outputs.video_embeds
+
+    # Fallback for older transformers behaviors returning tuples.
+    if isinstance(outputs, tuple):
+        # Typical tuple order for XCLIPOutput:
+        # (loss, logits_per_video, logits_per_text, text_embeds, video_embeds, ...)
+        if len(outputs) > 4 and outputs[4] is not None:
+            return outputs[4]
+        # Last-resort scan for a [B, D] tensor candidate.
+        for item in outputs:
+            if torch.is_tensor(item) and item.dim() == 2 and item.shape[0] == batch_size:
+                return item
+
+    raise RuntimeError("Failed to extract X-CLIP video embeddings from model outputs.")
+
+
+def _init_xclip_rollout_scorer(model_id: str, device: torch.device) -> None:
+    global _XCLIP_ROLLOUT_MODEL, _XCLIP_ROLLOUT_PROCESSOR, _XCLIP_ROLLOUT_DEVICE, _XCLIP_ROLLOUT_MODEL_ID
+    if _XCLIP_ROLLOUT_MODEL_ID == model_id and _XCLIP_ROLLOUT_MODEL is not None:
+        return
+    _XCLIP_ROLLOUT_PROCESSOR = XCLIPProcessor.from_pretrained(model_id)
+    _XCLIP_ROLLOUT_MODEL = XCLIPModel.from_pretrained(model_id).to(device)
+    if device.type == "cuda":
+        _XCLIP_ROLLOUT_MODEL = _XCLIP_ROLLOUT_MODEL.half()
+    _XCLIP_ROLLOUT_MODEL.eval()
+    _XCLIP_ROLLOUT_DEVICE = device
+    _XCLIP_ROLLOUT_MODEL_ID = model_id
+    print(f"XCLIP rollout scorer: model={model_id}, device={device}, fp16={device.type == 'cuda'}")
+
+
+def _xclip_batch_score(
+    frame_sequences: List[List[np.ndarray]],
+    goal: str,
+    processor: XCLIPProcessor,
+    model: XCLIPModel,
+    device: torch.device,
+    reward_scale: float,
+    text_features_cache: Optional[torch.Tensor],
+) -> tuple[np.ndarray, torch.Tensor]:
+    """One forward pass: video batch × fixed text goal → cosine similarities → rewards.
+
+    Rewards are ``reward_scale * (cosine_sim + 1) / 2`` in ``[0, reward_scale]``.
+    """
+    n = len(frame_sequences)
+    if n == 0:
+        return np.zeros(0, dtype=np.float32), text_features_cache
+
+    # X-CLIP batching requires homogeneous temporal length.
+    videos = _prepare_xclip_videos(frame_sequences, target_frames=8)
+
+    use_fp16 = device.type == "cuda"
+    with torch.no_grad():
+        if text_features_cache is None:
+            t_inputs = processor(text=[goal], return_tensors="pt", padding=True)
+            t_inputs = {k: v.to(device) for k, v in t_inputs.items()}
+            tf = model.get_text_features(**t_inputs)
+            tf = F.normalize(tf.float(), dim=-1)
+            if use_fp16:
+                tf = tf.half()
+            text_features_cache = tf
+        else:
+            tf = text_features_cache
+
+        # XCLIPProcessor emits `pixel_values` for video clips via `images=...`.
+        v_inputs = processor(images=videos, return_tensors="pt", padding=True)
+        v_inputs = {k: v.to(device) if torch.is_tensor(v) else v for k, v in v_inputs.items()}
+        if use_fp16 and "pixel_values" in v_inputs:
+            v_inputs["pixel_values"] = v_inputs["pixel_values"].half()
+
+        vf = _xclip_video_features_from_forward(
+            model=model, pixel_values=v_inputs["pixel_values"], device=device
+        )
+        vf = F.normalize(vf.float(), dim=-1)
+
+        sim = (vf @ tf.float().T).squeeze(-1)
+        rewards_t = reward_scale * (sim + 1.0) / 2.0
+        rewards = rewards_t.detach().float().cpu().numpy().astype(np.float32)
+
+    return rewards, text_features_cache
+
+
+def _xclip_batch_score_multi_goal(
+    frame_sequences: List[List[np.ndarray]],
+    goals: List[str],
+    goal_weights: List[float],
+    processor: XCLIPProcessor,
+    model: XCLIPModel,
+    device: torch.device,
+    reward_scale: float,
+    text_features_cache: Optional[torch.Tensor],
+) -> tuple[np.ndarray, Optional[torch.Tensor]]:
+    """Score videos against multiple goals; return weighted sum of (cos_sim+1)/2 per goal."""
+    n = len(frame_sequences)
+    n_goals = len(goals)
+    if n == 0 or n_goals == 0:
+        return np.zeros(max(0, n), dtype=np.float32), text_features_cache
+
+    weights = np.asarray(goal_weights, dtype=np.float32)
+    if len(weights) != n_goals:
+        weights = np.ones(n_goals, dtype=np.float32) / n_goals
+    weights = weights / weights.sum()
+    weights_t = torch.from_numpy(weights).to(device)
+
+    # X-CLIP batching requires homogeneous temporal length.
+    videos = _prepare_xclip_videos(frame_sequences, target_frames=8)
+
+    use_fp16 = device.type == "cuda"
+    with torch.no_grad():
+        if text_features_cache is None:
+            t_inputs = processor(text=goals, return_tensors="pt", padding=True)
+            t_inputs = {k: v.to(device) for k, v in t_inputs.items()}
+            tf = model.get_text_features(**t_inputs)
+            tf = F.normalize(tf.float(), dim=-1)
+            if use_fp16:
+                tf = tf.half()
+            text_features_cache = tf
+        else:
+            tf = text_features_cache
+
+        # XCLIPProcessor emits `pixel_values` for video clips via `images=...`.
+        v_inputs = processor(images=videos, return_tensors="pt", padding=True)
+        v_inputs = {k: v.to(device) if torch.is_tensor(v) else v for k, v in v_inputs.items()}
+        if use_fp16 and "pixel_values" in v_inputs:
+            v_inputs["pixel_values"] = v_inputs["pixel_values"].half()
+
+        vf = _xclip_video_features_from_forward(
+            model=model, pixel_values=v_inputs["pixel_values"], device=device
+        )
+        vf = F.normalize(vf.float(), dim=-1)
+
+        sim = vf @ tf.float().T  # [n, n_goals]
+        scaled = (sim + 1.0) / 2.0
+        rewards_t = (scaled * weights_t).sum(dim=-1) * reward_scale
+        rewards = rewards_t.detach().float().cpu().numpy().astype(np.float32)
+
+    return rewards, text_features_cache
+
+
+def score_rollout_frame_sequences_xclip(
+    frame_sequences: List[List[np.ndarray]],
+    goal: str,
+    xclip_model_name: str,
+    device: torch.device,
+    reward_scale: float,
+    chunk_size: int,
+) -> np.ndarray:
+    """X-CLIP video-text scoring, one reward per frame sequence (video)."""
+    if not frame_sequences:
+        return np.zeros(0, dtype=np.float32)
+
+    _init_xclip_rollout_scorer(xclip_model_name, device)
+    model = _XCLIP_ROLLOUT_MODEL
+    processor = _XCLIP_ROLLOUT_PROCESSOR
+    dev = _XCLIP_ROLLOUT_DEVICE
+    assert model is not None and processor is not None and dev is not None
+
+    chunk_size = max(1, int(chunk_size))
+    parts: List[np.ndarray] = []
+    text_features_cache: Optional[torch.Tensor] = None
+    for start in range(0, len(frame_sequences), chunk_size):
+        chunk = frame_sequences[start : start + chunk_size]
+        r, text_features_cache = _xclip_batch_score(
+            frame_sequences=chunk,
+            goal=goal,
+            processor=processor,
+            model=model,
+            device=dev,
+            reward_scale=reward_scale,
+            text_features_cache=text_features_cache,
+        )
+        parts.append(r)
+    return np.concatenate(parts, axis=0)
+
+
+def score_rollout_frame_sequences_xclip_multi_goal(
+    frame_sequences: List[List[np.ndarray]],
+    goals: List[str],
+    goal_weights: List[float],
+    xclip_model_name: str,
+    device: torch.device,
+    reward_scale: float,
+    chunk_size: int,
+) -> np.ndarray:
+    """X-CLIP multi-goal scoring: reward = reward_scale * weighted_sum of normalized cos_sim."""
+    if not frame_sequences or not goals:
+        return np.zeros(len(frame_sequences) if frame_sequences else 0, dtype=np.float32)
+
+    _init_xclip_rollout_scorer(xclip_model_name, device)
+    model = _XCLIP_ROLLOUT_MODEL
+    processor = _XCLIP_ROLLOUT_PROCESSOR
+    dev = _XCLIP_ROLLOUT_DEVICE
+    assert model is not None and processor is not None and dev is not None
+
+    chunk_size = max(1, int(chunk_size))
+    parts: List[np.ndarray] = []
+    text_features_cache: Optional[torch.Tensor] = None
+    for start in range(0, len(frame_sequences), chunk_size):
+        chunk = frame_sequences[start : start + chunk_size]
+        r, text_features_cache = _xclip_batch_score_multi_goal(
+            frame_sequences=chunk,
+            goals=goals,
+            goal_weights=goal_weights,
+            processor=processor,
+            model=model,
+            device=dev,
+            reward_scale=reward_scale,
+            text_features_cache=text_features_cache,
+        )
+        parts.append(r)
+    return np.concatenate(parts, axis=0)
+
+
 def _init_clip_rollout_scorer(model_id: str, device: torch.device) -> None:
     global _CLIP_ROLLOUT_MODEL, _CLIP_ROLLOUT_PROCESSOR, _CLIP_ROLLOUT_DEVICE, _CLIP_ROLLOUT_MODEL_ID
     if _CLIP_ROLLOUT_MODEL_ID == model_id and _CLIP_ROLLOUT_MODEL is not None:
@@ -578,6 +847,93 @@ def score_rollout_composite_images_clip_multi_goal(
         )
         parts.append(r)
     return np.concatenate(parts, axis=0)
+
+
+def _frame_sequences_to_pil(
+    frame_sequences: List[List[np.ndarray]], frame_size: int = 224
+) -> tuple[List[Image.Image], List[int]]:
+    """Flatten sequences into PIL images and track per-sequence frame counts."""
+    flat_images: List[Image.Image] = []
+    counts: List[int] = []
+    for seq in frame_sequences:
+        n = len(seq)
+        counts.append(n)
+        for frame in seq:
+            flat_images.append(_frame_to_pil(frame, size=frame_size))
+    return flat_images, counts
+
+
+def _aggregate_frame_rewards(
+    per_frame_rewards: np.ndarray, counts: List[int]
+) -> np.ndarray:
+    """Average per-frame rewards back to one reward per sequence."""
+    if not counts:
+        return np.zeros(0, dtype=np.float32)
+    out = np.zeros(len(counts), dtype=np.float32)
+    cursor = 0
+    for i, n in enumerate(counts):
+        if n <= 0:
+            out[i] = 0.0
+            continue
+        out[i] = float(np.mean(per_frame_rewards[cursor : cursor + n]))
+        cursor += n
+    return out
+
+
+def score_rollout_frame_sequences_clip(
+    frame_sequences: List[List[np.ndarray]],
+    goal: str,
+    clip_model_name: str,
+    device: torch.device,
+    reward_scale: float,
+    chunk_size: int,
+) -> np.ndarray:
+    """CLIP scoring with per-frame PIL encoding, averaged per sequence."""
+    if not frame_sequences:
+        return np.zeros(0, dtype=np.float32)
+
+    flat_images, counts = _frame_sequences_to_pil(frame_sequences)
+    if not flat_images:
+        return np.zeros(len(frame_sequences), dtype=np.float32)
+
+    per_frame = score_rollout_composite_images_clip(
+        images=flat_images,
+        goal=goal,
+        clip_model_name=clip_model_name,
+        device=device,
+        reward_scale=reward_scale,
+        chunk_size=chunk_size,
+    )
+    return _aggregate_frame_rewards(per_frame, counts)
+
+
+def score_rollout_frame_sequences_clip_multi_goal(
+    frame_sequences: List[List[np.ndarray]],
+    goals: List[str],
+    goal_weights: List[float],
+    clip_model_name: str,
+    device: torch.device,
+    reward_scale: float,
+    chunk_size: int,
+) -> np.ndarray:
+    """CLIP multi-goal scoring with per-frame PIL encoding, averaged per sequence."""
+    if not frame_sequences:
+        return np.zeros(0, dtype=np.float32)
+
+    flat_images, counts = _frame_sequences_to_pil(frame_sequences)
+    if not flat_images:
+        return np.zeros(len(frame_sequences), dtype=np.float32)
+
+    per_frame = score_rollout_composite_images_clip_multi_goal(
+        images=flat_images,
+        goals=goals,
+        goal_weights=goal_weights,
+        clip_model_name=clip_model_name,
+        device=device,
+        reward_scale=reward_scale,
+        chunk_size=chunk_size,
+    )
+    return _aggregate_frame_rewards(per_frame, counts)
 
 
 # ---------------------------------------------------------------------------
