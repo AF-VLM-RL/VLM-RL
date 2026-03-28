@@ -1,4 +1,5 @@
 import collections
+import os
 import gymnasium as gym
 import torch
 import numpy as np
@@ -10,7 +11,8 @@ from qwen_vl_utils import process_vision_info
 class VLMRewardWrapper(gym.Wrapper):
     def __init__(self, env, text_goal, device, n_frames=4, frame_every=4, clip_every=16,
                  model_id="Qwen/Qwen2-VL-2B-Instruct",
-                 delta_reward=True, normalize_reward=True, reward_scale=10.0):
+                 delta_reward=True, normalize_reward=True, reward_scale=10.0,
+                 save_dir="test"):
         assert clip_every >= frame_every, "clip_every must be >= frame_every"
         assert clip_every % frame_every == 0, "clip_every must be a multiple of frame_every"
 
@@ -33,6 +35,9 @@ class VLMRewardWrapper(gym.Wrapper):
 
         self.frame_buffer = collections.deque(maxlen=n_frames)
 
+        self.save_dir = save_dir
+        self._save_count = 0
+
         self.model = Qwen2VLForConditionalGeneration.from_pretrained(
             model_id,
             torch_dtype=torch.float16,
@@ -41,18 +46,17 @@ class VLMRewardWrapper(gym.Wrapper):
         self.model.eval()
         self.processor = AutoProcessor.from_pretrained(model_id)
 
-        self.prompt_text = (
-            "Does this image show {goal}? "
-            "Answer only Yes or No".format(goal=text_goal)
-        )
+        self.text_goal = text_goal
 
         self.yes_token_id = self.processor.tokenizer.encode("Yes", add_special_tokens=False)[0]
         self.no_token_id = self.processor.tokenizer.encode("No", add_special_tokens=False)[0]
 
-        print(f"Qwen-VL Initialized: model={model_id} n_frames={n_frames}, frame_every={frame_every}, "
-              f"clip_every={clip_every}\n", 
-              f"Prompt: '{text_goal}', "
-              f"delta_reward={delta_reward}, normalize_reward={normalize_reward}")
+        print("Qwen-VL Initialized: model={0}, n_frames={1}, frame_every={2}, clip_every={3}".format(
+            model_id, n_frames, frame_every, clip_every
+        ))
+        print("delta_reward={0}, normalize_reward={1}, reward_scale={2}".format(
+            delta_reward, normalize_reward, reward_scale
+        ))
 
     def _update_reward(self, reward):
         self._reward_count += 1
@@ -78,6 +82,37 @@ class VLMRewardWrapper(gym.Wrapper):
             reward = self._normalize_reward(reward)
 
         return reward
+    
+    def _get_description(self, pil_image, prompt):
+        messages = [
+            {
+                "role": "user",
+                "content": [
+                    {"type": "image", "image": pil_image},
+                    {"type": "text", "text": prompt},
+                ],
+            }
+        ]
+
+        text = self.processor.apply_chat_template(
+            messages, tokenize=False, add_generation_prompt=True
+        )
+        image_inputs, video_inputs = process_vision_info(messages)
+        inputs = self.processor(
+            text=[text],
+            images=image_inputs,
+            videos=video_inputs,
+            return_tensors="pt",
+        ).to(self.device)
+
+        with torch.no_grad():
+            output_ids = self.model.generate(**inputs, max_new_tokens=200)
+
+        input_len = inputs["input_ids"].shape[1]
+        description = self.processor.tokenizer.decode(
+            output_ids[0][input_len:], skip_special_tokens=True
+        )
+        return description
 
     def reset(self, **kwargs):
         obs, info = self.env.reset(**kwargs)
@@ -122,12 +157,25 @@ class VLMRewardWrapper(gym.Wrapper):
         combined = np.ascontiguousarray(combined)
         pil_image = Image.fromarray(combined.astype(np.uint8))
 
+        save_path = os.path.join(self.save_dir, f"frame_{self._save_count:05d}.png")
+        pil_image.save(save_path)
+        self._save_count += 1
+
+        description_info = self._get_description(pil_image, "Describe what the Ant robot is doing in detail across these frames")
+        print(f"[VLM Description] {description_info}")
+        description_answer = self._get_description(pil_image, f"Does this show {self.text_goal}? Answer only Yes or No.")
+        print(f"[VLM Description] {description_answer}")
+
         messages = [
             {
                 "role": "user",
                 "content": [
                     {"type": "image", "image": pil_image},
-                    {"type": "text", "text": (self.prompt_text)},
+                    {"type": "text", "text": (
+                        f"You observed: \"{description_info}\"\n",
+                        f"Does this show {self.text_goal}? "
+                        f"Answer only Yes or No."
+                    )},
                 ],
             }
         ]

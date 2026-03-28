@@ -1,16 +1,16 @@
 #!/bin/bash
-#SBATCH --job-name=sac_clip_ant_training
-#SBATCH --output=/scratch/gilbreth/yang2739/logs/sac_clip_%j.out
-#SBATCH --error=/scratch/gilbreth/yang2739/logs/sac_clip_%j.err
+#SBATCH --job-name=ppo_ant_training
+#SBATCH --output=/scratch/gilbreth/yang2739/logs/ppo_%j.out
+#SBATCH --error=/scratch/gilbreth/yang2739/logs/ppo_%j.err
 #SBATCH --account=ai-forge
 #SBATCH --partition=a10
 #SBATCH --qos=normal
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --gres=gpu:1
-#SBATCH --cpus-per-task=8
-#SBATCH --mem=32G
-#SBATCH --time=48:00:00
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=16G
+#SBATCH --time=04:00:00
 
 export SCRATCH_DIR="/scratch/gilbreth/yang2739"
 export PROJECT_DIR="$SCRATCH_DIR/VLM-RL-RUNS"
@@ -33,17 +33,10 @@ cd "$HOME/Group-VLM-RL"
 export UV_PROJECT_ENVIRONMENT="$PROJECT_DIR/venv"
 uv sync
 
-CMD="srun uv run python experiments/ant/sac_clip_multiframe.py \
-  --env-id Ant-v4 \
-  --vlm-goal 'A four-legged ant robot walking forward to the right stably and upright on a flat surface.' \
-  --vlm-n-frames 8 \
-  --vlm-frame-every 2 \
-  --vlm-clip-every 16 \
+echo "Starting PPO in MuJoCo Ant environment training..."
+srun uv run python experiments/mujoco/ppo.py \
+  --seed 1 \
+  --env-id Ant-4 \
   --track \
   --capture-video \
-  --wandb-project-name cleanrl-experiments"
-
-echo "Starting SAC + CLIP in MuJoCo Ant environment training..."
-echo "Command: $CMD"
-eval "$CMD"
-
+  --wandb-project-name "cleanrl-experiments"

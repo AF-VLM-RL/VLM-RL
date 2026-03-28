@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=sac_ant_training
-#SBATCH --output=/scratch/gilbreth/yang2739/logs/sac_ant_%j.out
-#SBATCH --error=/scratch/gilbreth/yang2739/logs/sac_ant_%j.err
+#SBATCH --job-name=ppo_vlm_ant_training
+#SBATCH --output=/scratch/gilbreth/yang2739/logs/ppo_vlm_%j.out
+#SBATCH --error=/scratch/gilbreth/yang2739/logs/ppo_vlm_%j.err
 #SBATCH --account=ai-forge
 #SBATCH --partition=a10
 #SBATCH --qos=normal
@@ -33,11 +33,11 @@ cd "$HOME/Group-VLM-RL"
 export UV_PROJECT_ENVIRONMENT="$PROJECT_DIR/venv"
 uv sync
 
-echo "Starting SAC in MuJoCo Ant environment training..."
-srun uv run python experiments/ant/sac.py \
+echo "Starting PPO + VLM in MuJoCo Ant environment training..."
+srun uv run python experiments/mujoco/ppo_clip.py \
   --seed 1 \
   --env-id Ant-4 \
+  --vlm-goal "A four-legged ant robot walking forward to the right stably and upright on a flat surface." \
   --track \
-  --capture-video \
-  --wandb-project-name "cleanrl-experiments"
-
+  --wandb-project-name "cleanrl-experiments" \
+  --capture-video

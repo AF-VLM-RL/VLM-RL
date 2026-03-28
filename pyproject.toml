@@ -21,4 +21,5 @@ dependencies = [
     "torchvision>=0.23.0",
     "qwen-vl-utils>=0.0.14",
     "gymnasium[mujoco]>=1.1.1",
+    "accelerate>=1.10.1",
 ]

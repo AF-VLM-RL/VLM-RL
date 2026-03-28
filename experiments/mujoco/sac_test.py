@@ -13,18 +13,9 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import tyro
+import wandb
+import glob
 from torch.utils.tensorboard import SummaryWriter
-
-_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-_CLEANRL_ROOT = os.path.join(_PROJECT_ROOT, "cleanrl")
-if _PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, _PROJECT_ROOT)
-if _CLEANRL_ROOT not in sys.path:
-    sys.path.insert(0, _CLEANRL_ROOT)
-
-from cleanrl_utils.buffers import ReplayBuffer
-from src.utils import sanitize_prompt_for_filename
-from src.wrappers_clip import VLMRewardWrapper
 
 @dataclass
 class Args:
@@ -44,8 +35,17 @@ class Args:
     """the entity (team) of wandb's project"""
     capture_video: bool = False
     """whether to capture videos of the agent performances (check out `videos` folder)"""
+    video_every: int = 1000
+    """the frequency (measured in steps) of capturing videos"""
+    run_id: Optional[str] = None
+    """optional run identifier; defaults to current timestamp"""
 
     # VLM reward arguments
+    vlm_model_type: str = "clip"
+    """Type of VLM model to use. Options: 'clip', 'qwen'"""
+    vlm_model_id: str = "openai/clip-vit-base-patch32"
+    """CLIP model to use. Options: 'openai/clip-vit-base-patch32', 'openai/clip-vit-large-patch14'"""
+    """Qwen model to use. Options: 'Qwen/Qwen2-VL-2B-Instruct', 'Qwen/Qwen2-VL-7B-Instruct'"""
     vlm_goal: str = "an ant robot walking right stably"
     """The natural language goal for VLM reward shaping"""
     vlm_device: str = "auto"
@@ -87,6 +87,25 @@ class Args:
     autotune: bool = True
     """automatic tuning of the entropy coefficient"""
 
+def find_project_root(marker="pyproject.toml"):
+    path = os.path.abspath(__file__)
+    while True:
+        parent = os.path.dirname(path)
+        if os.path.exists(os.path.join(path, marker)):
+            return path
+        if parent == path:
+            raise RuntimeError(f"Could not find project root (looking for '{marker}')")
+        path = parent
+
+_PROJECT_ROOT = find_project_root()
+_CLEANRL_ROOT = os.path.join(_PROJECT_ROOT, "cleanrl")
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
+if _CLEANRL_ROOT not in sys.path:
+    sys.path.insert(0, _CLEANRL_ROOT)
+
+from cleanrl_utils.buffers import ReplayBuffer
+
 
 def resolve_vlm_device(vlm_device, use_cuda):
     if vlm_device in ("cuda", "cpu"):
@@ -98,18 +117,32 @@ def resolve_vlm_device(vlm_device, use_cuda):
     raise ValueError("vlm_device must be one of: 'auto', 'cuda', 'cpu'")
 
 
-def make_env(env_id, seed, idx, capture_video, run_name, vlm_goal, vlm_device, vlm_n_frames, vlm_frame_every, vlm_clip_every):
+def make_env(env_id, seed, idx, args, record_flag=None):
     def thunk():
         env = gym.make(env_id, render_mode="rgb_array")
-        if capture_video and idx == 0:
-            env = gym.wrappers.RecordVideo(env, "videos/{0}".format(run_name))
+        if idx == 0:
+            def episode_trigger(episode_id):
+                if record_flag is not None and record_flag[0]:
+                    record_flag[0] = False
+                    return True
+                if args.capture_video and episode_id % args.video_every == 0:
+                    return True
+                return False
+
+            env = gym.wrappers.RecordVideo(
+                env,
+                f"videos/{run_name}",
+                episode_trigger=episode_trigger,
+            )
+
         env = VLMRewardWrapper(
             env,
-            text_goal=vlm_goal,
-            device=vlm_device,
-            n_frames=vlm_n_frames,
-            frame_every=vlm_frame_every,
-            clip_every=vlm_clip_every
+            model_id=args.vlm_model_id,
+            text_goal=args.vlm_goal,
+            device=args.vlm_device,
+            n_frames=args.vlm_n_frames,
+            frame_every=args.vlm_frame_every,
+            clip_every=args.vlm_clip_every
         )
         env = gym.wrappers.RecordEpisodeStatistics(env)
         env.action_space.seed(seed)
@@ -138,7 +171,6 @@ class SoftQNetwork(nn.Module):
 
 LOG_STD_MAX = 2
 LOG_STD_MIN = -5
-
 
 class Actor(nn.Module):
     def __init__(self, env):
@@ -193,29 +225,31 @@ class Actor(nn.Module):
 
 if __name__ == "__main__":
     args = tyro.cli(Args)
-
     args.vlm_device = resolve_vlm_device(args.vlm_device, args.cuda)
 
-    prompt_slug = sanitize_prompt_for_filename(args.vlm_goal)
-    run_name = "{0}_{1}_{2}_{3}_{4}".format(
-        args.env_id,
-        args.exp_name,
-        prompt_slug,
-        args.seed,
-        int(time.time()),
-    )
+    if args.vlm_model_type == "clip":
+        from src.wrappers_clip import VLMRewardWrapper
+    elif args.vlm_model_type == "qwen":
+        from src.wrappers_test import VLMRewardWrapper
+
+    run_id = args.run_id if args.run_id else str(int(time.time()))
+    run_name = f"{args.env_id}_{args.exp_name}_{run_id}"
     run_dir = os.path.join(_PROJECT_ROOT, "runs", run_name)
     os.makedirs(run_dir, exist_ok=True)
 
-    if args.track:
-        import wandb  # pyright: ignore[reportMissingImports]
+    episode_count = 0
+    record_next_episode = [False]
+    best_episodic_return = -float("inf")
+    best_model_path = os.path.join(run_dir, "best_actor.pt")
 
+    if args.track:
         wandb.init(
             project=args.wandb_project_name,
             entity=args.wandb_entity,
             sync_tensorboard=True,
             config=vars(args),
             name=run_name,
+            monitor_gym=False,
             save_code=True,
         )
 
@@ -237,21 +271,7 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")
 
     envs = gym.vector.SyncVectorEnv(
-        [
-            make_env(
-                args.env_id,
-                args.seed + i,
-                i,
-                args.capture_video,
-                run_name,
-                args.vlm_goal,
-                args.vlm_device,
-                args.vlm_n_frames,
-                args.vlm_frame_every,
-                args.vlm_clip_every,
-            )
-            for i in range(args.num_envs)
-        ]
+        [ make_env(args.env_id, args.seed + i, i, args, record_next_episode) for i in range(args.num_envs) ]
     )
 
     assert isinstance(envs.single_action_space, gym.spaces.Box), "only continuous action space is supported"
@@ -309,11 +329,8 @@ if __name__ == "__main__":
         if "final_info" in infos:
             for info in infos["final_info"]:
                 if info is not None and "episode" in info:
-                    print(
-                        "global_step={0}, episodic_return={1}".format(
-                            global_step, info["episode"]["r"]
-                        )
-                    )
+                    episode_count += 1
+                    print(f"global_step={global_step}, episode={episode_count}, episodic_return={info['episode']['r']}")
                     writer.add_scalar("charts/episodic_return", info["episode"]["r"], global_step)
                     writer.add_scalar("charts/episodic_length", info["episode"]["l"], global_step)
                     break
@@ -322,11 +339,22 @@ if __name__ == "__main__":
                 if done:
                     ep_return = infos["episode"]["r"][i].item()
                     ep_length = infos["episode"]["l"][i].item()
-                    print(
-                        "global_step={0}, episodic_return={1:.3f}".format(
-                            global_step, ep_return
-                        )
-                    )
+
+                    episode_count += 1
+                    print(f"global_step={global_step}, episode={episode_count}, episodic_return={ep_return:.3f}")
+
+                    if ep_return > best_episodic_return:
+                            best_episodic_return = ep_return
+                            record_next_episode[0] = True
+                            torch.save({
+                                "actor": actor.state_dict(),
+                                "qf1": qf1.state_dict(),
+                                "qf2": qf2.state_dict(),
+                                "global_step": global_step,
+                                "episodic_return": ep_return,
+                            }, best_model_path)
+                            print(f"    -> New best: {ep_return:.3f}")
+
                     writer.add_scalar("charts/episodic_return", ep_return, global_step)
                     writer.add_scalar("charts/episodic_length", ep_length, global_step)
 
@@ -423,10 +451,10 @@ if __name__ == "__main__":
     writer.close()
 
     if args.track:
-        if args.capture_video:
-            import glob
-            video_files = glob.glob(f"videos/{run_name}/*.mp4")
-            for video_file in video_files:
-                wandb.log({"video": wandb.Video(video_file, fps=30, format="mp4")})
+        # if args.capture_video:
+        #     video_files = glob.glob(f"videos/{run_name}/*.mp4")
+        #     for video_file in video_files:
+        #         video_name = os.path.splitext(os.path.basename(video_file))[0]
+        #         wandb.log({video_name: wandb.Video(video_file, fps=30, format="mp4")})
 
         wandb.finish()

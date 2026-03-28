@@ -7,11 +7,15 @@ from transformers import CLIPModel, CLIPTokenizer
 
 
 class VLMRewardWrapper(gym.Wrapper):
-    def __init__(self, env, text_goal, device, n_frames=4, frame_every=4, clip_every=16):
+    def __init__(self, env, model_id, text_goal, device, n_frames=4, frame_every=4, clip_every=16,
+                 delta_reward=True, normalize_reward=True, reward_scale=10.0):
         """
-        n_frames    : how many frames to concatenate and show CLIP
-        frame_every : collect one frame into the buffer every K steps
-        clip_every  : run CLIP every M steps (must be >= frame_every)
+        n_frames         : how many frames to concatenate and show CLIP
+        frame_every      : collect one frame into the buffer every K steps
+        clip_every       : run CLIP every M steps (must be >= frame_every)
+        delta_reward     : reward the *change* in score, not the absolute value
+        normalize_reward : apply running mean/std normalization to rewards
+        reward_scale     : scale applied after normalization (or directly if not normalizing)
         """
         assert clip_every >= frame_every, "clip_every must be >= frame_every"
         assert clip_every % frame_every == 0, "clip_every must be a multiple of frame_every"
@@ -24,10 +28,19 @@ class VLMRewardWrapper(gym.Wrapper):
         self.step_count = 0
         self.last_reward = 0.0
 
+        self.delta_reward = delta_reward
+        self.prev_clip_score = None
+
+        self.normalize_reward = normalize_reward
+        self.reward_scale = reward_scale
+        self._reward_running_mean = 0.0
+        self._reward_running_var = 1.0
+        self._reward_count = 0
+
         self.frame_buffer = collections.deque(maxlen=n_frames)
 
-        self.model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").to(device).half()
-        tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-base-patch32")
+        self.model = CLIPModel.from_pretrained(model_id).to(device).half()
+        tokenizer = CLIPTokenizer.from_pretrained(model_id)
 
         with torch.no_grad():
             text_inputs = tokenizer([text_goal], padding=True, return_tensors="pt")
@@ -37,7 +50,35 @@ class VLMRewardWrapper(gym.Wrapper):
         self.mean = torch.tensor([0.4814, 0.4578, 0.4082], device=device, dtype=torch.float16).view(1, 3, 1, 1)
         self.std  = torch.tensor([0.2686, 0.2613, 0.2757], device=device, dtype=torch.float16).view(1, 3, 1, 1)
 
-        print(f"VLM Initialized: n_frames={n_frames}, frame_every={frame_every}, clip_every={clip_every}, goal='{text_goal}'")
+        print(f"CLIP Initialized: model={model_id} n_frames={n_frames}, frame_every={frame_every}, "
+              f"clip_every={clip_every}\n", 
+              f"Goal: '{text_goal}', "
+              f"delta_reward={delta_reward}, normalize_reward={normalize_reward}")
+
+    def _update_reward(self, reward):
+        self._reward_count += 1
+        delta = reward - self._reward_running_mean
+        self._reward_running_mean += delta / self._reward_count
+        delta2 = reward - self._reward_running_mean
+        self._reward_running_var += (delta * delta2 - self._reward_running_var) / self._reward_count
+
+    def _normalize_reward(self, reward):
+        std = max(np.sqrt(self._reward_running_var), 1e-8)
+        return self.reward_scale * (reward - self._reward_running_mean) / std
+
+    def _compute_reward(self, raw_score):
+        if self.delta_reward and self.prev_clip_score is not None:
+            reward = raw_score - self.prev_clip_score
+        else:
+            reward = raw_score
+
+        self.prev_clip_score = raw_score
+
+        if self.normalize_reward:
+            self._update_reward(reward)
+            reward = self._normalize_reward(reward)
+
+        return reward
 
     def reset(self, **kwargs):
         obs, info = self.env.reset(**kwargs)
@@ -50,8 +91,10 @@ class VLMRewardWrapper(gym.Wrapper):
         for _ in range(self.n_frames):
             self.frame_buffer.append(frame)
 
-        self.last_reward = self.compute_vlm_reward()
-        print(f"[VLM Debug] Reset Reward: {self.last_reward:.4f}")
+        raw_score = self.compute_vlm_reward()
+        self.prev_clip_score = raw_score
+        self.last_reward = 0.0
+        print(f"[VLM Debug] Reset raw score: {raw_score:.4f}")
 
         return obs, info
 
@@ -61,12 +104,17 @@ class VLMRewardWrapper(gym.Wrapper):
 
         if self.step_count % self.frame_every == 0:
             frame = self.env.render()
-            assert frame is not None, "FATAL: env.render() returned None during step()!"
+            assert frame is not None, "FATAL: env.render() returned None during step()"
             self.frame_buffer.append(frame)
 
         if self.step_count % self.clip_every == 0:
-            self.last_reward = self.compute_vlm_reward()
-            print(f"[VLM Debug] Step {self.step_count} Reward: {self.last_reward:.4f}")
+            raw_score = self.compute_vlm_reward()
+            self.last_reward = self._compute_reward(raw_score)
+            print(f"[VLM Debug] Step {self.step_count} | "
+                  f"raw={raw_score:.4f} | shaped={self.last_reward:.4f} | "
+                  f"reward_mean={self._reward_running_mean:.4f}")
+        # else:
+        #     self.last_reward = 0.0
 
         info["vlm_reward"] = self.last_reward
         return obs, self.last_reward, terminated, truncated, info
@@ -88,3 +136,9 @@ class VLMRewardWrapper(gym.Wrapper):
             similarity = (img_feats @ self.text_features.T).item()
 
         return similarity
+
+# Improvements so far:
+# 1. Added passing multiple frames to CLIP by concatenating them
+# 2. Added option for delta reward (delta reward = current score - previous score)
+# 3. Added running mean and std normalization for rewards
+# 4. Set reward value as 0 when not computing CLIP score
