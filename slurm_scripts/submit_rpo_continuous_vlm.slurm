@@ -1,7 +1,7 @@
 #!/bin/bash
-#SBATCH --job-name=ppo_cont_vlm
-#SBATCH --output=/scratch/gilbreth/sohn31/logs/ppo_continuous_vlm_8frames_clip_multi_goal_%j.out
-#SBATCH --error=/scratch/gilbreth/sohn31/logs/ppo_continuous_vlm_8frames_clip_multi_goal_%j.err
+#SBATCH --job-name=rpo_cont_vlm
+#SBATCH --output=/scratch/gilbreth/sohn31/logs/rpo_continuous_vlm_8frames_xclip_multi_goal_%j.out
+#SBATCH --error=/scratch/gilbreth/sohn31/logs/rpo_continuous_vlm_8frames_clip_multi_goal_%j.err
 #SBATCH --account=ai-forge
 #SBATCH --partition=a10
 #SBATCH --qos=normal
@@ -34,21 +34,22 @@ cd "$HOME/Group-VLM-RL"
 export UV_PROJECT_ENVIRONMENT="$PROJECT_DIR/venv"
 uv sync
 
-echo "Starting PPO continuous action + VLM (Walker2d-v4, X-CLIP video-text reward)..."
-uv run python experiments/ppo_continuous_action_vlm.py \
+echo "Starting RPO continuous action + VLM (Walker2d-v4, X-CLIP video-text reward)..."
+uv run python experiments/rpo_continuous_action_vlm.py \
   --seed 1 \
   --env-id Walker2d-v4 \
   --num-envs 8 \
   --num-steps 256 \
   --total-timesteps 1000000 \
+  --rpo-alpha 0.5 \
   --vlm-backend xclip \
-  --vlm-goals "a robot walking to the right with a smooth, steady gait, widening its legs into a stride when they are closed, and pulling its legs back together when they are wide" \
+  --vlm-goals "A side-view video of a bipedal robot walking to the right with continuous forward motion, stable balance, constant speed, and a consistent gait cycle where legs alternate between close and wide, with no falling, jitter, or backward movement." \
   --vlm-goal-weights 1.0 \
   --xclip-model-name "microsoft/xclip-base-patch32" \
   --vlm-max-frames 4 \
-  --vlm-frame-stride 5 \
+  --vlm-frame-stride 3 \
   --vlm-rollout-chunk-size 512 \
-  --update-epochs 5 \
+  --update-epochs 20 \
   --track \
-  --wandb-project-name "cleanrl-experiments" \
+  --wandb-project-name "VLM-RL-TASK" \
   --capture-video
