@@ -1,25 +1,27 @@
 [project]
-name = "group-vlm-rl"
+name = "VLM-RL"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.9,<3.11"
+
 dependencies = [
-    "tensorboard>=2.10.0",
-    "wandb>=0.13.11",
+    "numpy>=2.0.2",
     "torch>=2.6.0",
-    "moviepy>=1.0.3",
-    "pygame>=2.1",
-    "huggingface-hub>=0.11.1",
-    "tyro>=0.5.10",
-    "pillow>=11.3.0",
+    "tensorboard>=2.10.0",
     "safetensors>=0.7.0",
     "transformers>=4.57.6",
-    "numpy>=2.0.2",
+    "huggingface-hub>=0.11.1",
+    "torchvision>=0.23.0",
+    "wandb>=0.13.11",
+    "moviepy>=1.0.3",
+    "pygame>=2.1",
+    "tyro>=0.5.10",
+    "pillow>=11.3.0",
+    "gymnasium[mujoco]>=1.1.1",
     "mujoco==3.1.6",
     "matplotlib>=3.9.4",
-    "torchvision>=0.23.0",
     "qwen-vl-utils>=0.0.14",
-    "gymnasium[mujoco]>=1.1.1",
     "accelerate>=1.10.1",
+    "imageio>=2.37.2",
 ]

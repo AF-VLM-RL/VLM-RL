@@ -9,14 +9,6 @@ from transformers import CLIPModel, CLIPTokenizer
 class VLMRewardWrapper(gym.Wrapper):
     def __init__(self, env, model_id, text_goal, device, n_frames=4, frame_every=4, clip_every=16,
                  delta_reward=True, normalize_reward=True, reward_scale=10.0):
-        """
-        n_frames         : how many frames to concatenate and show CLIP
-        frame_every      : collect one frame into the buffer every K steps
-        clip_every       : run CLIP every M steps (must be >= frame_every)
-        delta_reward     : reward the *change* in score, not the absolute value
-        normalize_reward : apply running mean/std normalization to rewards
-        reward_scale     : scale applied after normalization (or directly if not normalizing)
-        """
         assert clip_every >= frame_every, "clip_every must be >= frame_every"
         assert clip_every % frame_every == 0, "clip_every must be a multiple of frame_every"
 
@@ -29,7 +21,7 @@ class VLMRewardWrapper(gym.Wrapper):
         self.last_reward = 0.0
 
         self.delta_reward = delta_reward
-        self.prev_clip_score = None
+        self.prev_raw_score = None
 
         self.normalize_reward = normalize_reward
         self.reward_scale = reward_scale
@@ -67,12 +59,12 @@ class VLMRewardWrapper(gym.Wrapper):
         return self.reward_scale * (reward - self._reward_running_mean) / std
 
     def _compute_reward(self, raw_score):
-        if self.delta_reward and self.prev_clip_score is not None:
-            reward = raw_score - self.prev_clip_score
+        if self.delta_reward and self.prev_raw_score is not None:
+            reward = raw_score - self.prev_raw_score
         else:
             reward = raw_score
 
-        self.prev_clip_score = raw_score
+        self.prev_raw_score = raw_score
 
         if self.normalize_reward:
             self._update_reward(reward)
@@ -85,16 +77,16 @@ class VLMRewardWrapper(gym.Wrapper):
         self.step_count = 0
 
         frame = self.env.render()
-        assert frame is not None, "FATAL: env.render() returned None! Check render_mode='rgb_array'."
+        assert frame is not None, "FATAL: env.render() returned None."
 
         self.frame_buffer.clear()
         for _ in range(self.n_frames):
             self.frame_buffer.append(frame)
 
         raw_score = self.compute_vlm_reward()
-        self.prev_clip_score = raw_score
+        self.prev_raw_score = raw_score
         self.last_reward = 0.0
-        print(f"[VLM Debug] Reset raw score: {raw_score:.4f}")
+        print(f"[VLM Debug] Reset: raw={raw_score:.4f}")
 
         return obs, info
 
@@ -104,13 +96,13 @@ class VLMRewardWrapper(gym.Wrapper):
 
         if self.step_count % self.frame_every == 0:
             frame = self.env.render()
-            assert frame is not None, "FATAL: env.render() returned None during step()"
+            assert frame is not None, "FATAL: env.render() returned None."
             self.frame_buffer.append(frame)
 
         if self.step_count % self.clip_every == 0:
             raw_score = self.compute_vlm_reward()
             self.last_reward = self._compute_reward(raw_score)
-            print(f"[VLM Debug] Step {self.step_count} | "
+            print(f"[VLM Debug] step={self.step_count} | "
                   f"raw={raw_score:.4f} | shaped={self.last_reward:.4f} | "
                   f"reward_mean={self._reward_running_mean:.4f}")
         # else:

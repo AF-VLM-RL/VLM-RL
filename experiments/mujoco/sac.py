@@ -1,7 +1,6 @@
 # docs and experiment results can be found at https://docs.cleanrl.dev/rl-algorithms/sac/#sac_continuous_actionpy
 import os
 import random
-import sys
 import time
 from dataclasses import dataclass
 from typing import Optional
@@ -13,17 +12,11 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 import tyro
+import wandb
+import imageio
 from torch.utils.tensorboard import SummaryWriter
 
-_PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-_CLEANRL_ROOT = os.path.join(_PROJECT_ROOT, "cleanrl")
-if _PROJECT_ROOT not in sys.path:
-    sys.path.insert(0, _PROJECT_ROOT)
-if _CLEANRL_ROOT not in sys.path:
-    sys.path.insert(0, _CLEANRL_ROOT)
-
-from cleanrl_utils.buffers import ReplayBuffer  # pyright: ignore[reportMissingImports]
-
+from cleanrl_utils.buffers import ReplayBuffer
 
 @dataclass
 class Args:
@@ -43,6 +36,10 @@ class Args:
     """the entity (team) of wandb's project"""
     capture_video: bool = False
     """whether to capture videos of the agent performances (check out `videos` folder)"""
+    video_every: int = 1000
+    """the frequency (measured in steps) of capturing videos"""
+    run_id: Optional[str] = None
+    """optional run identifier; defaults to current timestamp"""
 
     # Algorithm specific arguments
     env_id: str = "Ant-v4"
@@ -58,7 +55,7 @@ class Args:
     tau: float = 0.005
     """target smoothing coefficient (default: 0.005)"""
     batch_size: int = 256
-    """the batch size of sample from the replay memory"""
+    """the batch size of sample from the reply memory"""
     learning_starts: int = 5000
     """timestep to start learning"""
     policy_lr: float = 3e-4
@@ -67,31 +64,19 @@ class Args:
     """the learning rate of the Q network optimizer"""
     policy_frequency: int = 2
     """the frequency of training policy (delayed)"""
-    target_network_frequency: int = 1
-    """the frequency of updates for the target networks"""
+    target_network_frequency: int = 1  # Denis Yarats' implementation delays this by 2.
+    """the frequency of updates for the target nerworks"""
     alpha: float = 0.2
     """Entropy regularization coefficient."""
     autotune: bool = True
     """automatic tuning of the entropy coefficient"""
 
 
-def make_env(env_id, seed, idx, capture_video, run_name):
+def make_env(env_id, seed):
     def thunk():
-        if capture_video and idx == 0:
-            env = gym.make(env_id, render_mode="rgb_array")
-            env = gym.wrappers.RecordVideo(env, "videos/{0}".format(run_name))
-        else:
-            env = gym.make(env_id)
-
+        env = gym.make(env_id, render_mode="rgb_array")
         env = gym.wrappers.RecordEpisodeStatistics(env)
-
-        if not isinstance(env.action_space, gym.spaces.Box):
-            raise TypeError(
-                "SAC continuous requires a Box action space, got: {0}".format(type(env.action_space).__name__)
-            )
-
         env.action_space.seed(seed)
-        env.observation_space.seed(seed)
         return env
 
     return thunk
@@ -101,10 +86,10 @@ def make_env(env_id, seed, idx, capture_video, run_name):
 class SoftQNetwork(nn.Module):
     def __init__(self, env):
         super().__init__()
-        obs_dim = int(np.prod(env.single_observation_space.shape))
-        act_dim = int(np.prod(env.single_action_space.shape))
-
-        self.fc1 = nn.Linear(obs_dim + act_dim, 256)
+        self.fc1 = nn.Linear(
+            np.array(env.single_observation_space.shape).prod() + np.prod(env.single_action_space.shape),
+            256,
+        )
         self.fc2 = nn.Linear(256, 256)
         self.fc3 = nn.Linear(256, 1)
 
@@ -123,14 +108,10 @@ LOG_STD_MIN = -5
 class Actor(nn.Module):
     def __init__(self, env):
         super().__init__()
-        obs_dim = int(np.prod(env.single_observation_space.shape))
-        act_dim = int(np.prod(env.single_action_space.shape))
-
-        self.fc1 = nn.Linear(obs_dim, 256)
+        self.fc1 = nn.Linear(np.array(env.single_observation_space.shape).prod(), 256)
         self.fc2 = nn.Linear(256, 256)
-        self.fc_mean = nn.Linear(256, act_dim)
-        self.fc_logstd = nn.Linear(256, act_dim)
-
+        self.fc_mean = nn.Linear(256, np.prod(env.single_action_space.shape))
+        self.fc_logstd = nn.Linear(256, np.prod(env.single_action_space.shape))
         # action rescaling
         self.register_buffer(
             "action_scale",
@@ -153,7 +134,7 @@ class Actor(nn.Module):
         mean = self.fc_mean(x)
         log_std = self.fc_logstd(x)
         log_std = torch.tanh(log_std)
-        log_std = LOG_STD_MIN + 0.5 * (LOG_STD_MAX - LOG_STD_MIN) * (log_std + 1)
+        log_std = LOG_STD_MIN + 0.5 * (LOG_STD_MAX - LOG_STD_MIN) * (log_std + 1)  # From SpinUp / Denis Yarats
 
         return mean, log_std
 
@@ -161,44 +142,19 @@ class Actor(nn.Module):
         mean, log_std = self(x)
         std = log_std.exp()
         normal = torch.distributions.Normal(mean, std)
-        x_t = normal.rsample()
+        x_t = normal.rsample()  # for reparameterization trick (mean + std * N(0,1))
         y_t = torch.tanh(x_t)
         action = y_t * self.action_scale + self.action_bias
         log_prob = normal.log_prob(x_t)
-
         # Enforcing Action Bound
         log_prob -= torch.log(self.action_scale * (1 - y_t.pow(2)) + 1e-6)
         log_prob = log_prob.sum(1, keepdim=True)
-
         mean = torch.tanh(mean) * self.action_scale + self.action_bias
         return action, log_prob, mean
 
 
 if __name__ == "__main__":
     args = tyro.cli(Args)
-    run_name = "{0}__{1}__{2}__{3}".format(args.env_id, args.exp_name, args.seed, int(time.time()))
-
-    if args.track:
-        import wandb  # pyright: ignore[reportMissingImports]
-
-        wandb.init(
-            project=args.wandb_project_name,
-            entity=args.wandb_entity,
-            sync_tensorboard=True,
-            config=vars(args),
-            name=run_name,
-            monitor_gym=True,
-            save_code=True,
-        )
-
-    writer = SummaryWriter("runs/{0}".format(run_name))
-    writer.add_text(
-        "hyperparameters",
-        "|param|value|\n|-|-|\n{0}".format(
-            "\n".join(["|{0}|{1}|".format(key, value) for key, value in vars(args).items()])
-        ),
-    )
-
     # TRY NOT TO MODIFY: seeding
     random.seed(args.seed)
     np.random.seed(args.seed)
@@ -207,12 +163,48 @@ if __name__ == "__main__":
 
     device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")
 
-    # env setup
-    envs = gym.vector.SyncVectorEnv(
-        [make_env(args.env_id, args.seed + i, i, args.capture_video, run_name) for i in range(args.num_envs)]
-    )
-    assert isinstance(envs.single_action_space, gym.spaces.Box), "only continuous action space is supported"
+    run_id = args.run_id if args.run_id else str(int(time.time()))
+    run_name = f"{args.env_id}_{args.exp_name}_{run_id}"
+    run_dir = f"runs/{run_name}"
+    os.makedirs(run_dir, exist_ok=True)
 
+    episode_count = 0
+    episode_frames = []
+    best_episode_return = -float("inf")
+    best_episode_path = os.path.join(run_dir, "best_model.pt")
+
+    # Environment setup
+    envs = gym.vector.SyncVectorEnv(
+        [ make_env(args.env_id, args.seed + i) for i in range(args.num_envs) ]
+    )
+
+    assert isinstance(envs.single_action_space, gym.spaces.Box), "only continuous action space is supported"
+    assert isinstance(envs.single_observation_space, gym.spaces.Box), "only Box observation space is supported"
+    
+
+    # Logging setup
+    if args.track:
+        wandb.init(
+            project=args.wandb_project_name,
+            entity=args.wandb_entity,
+            sync_tensorboard=True,
+            config=vars(args),
+            name=run_name,
+            monitor_gym=False,
+            save_code=True,
+        )
+    writer = SummaryWriter(run_dir)
+    writer.add_text(
+        "hyperparameters",
+        "|param|value|\n|-|-|\n%s" % ("\n".join([f"|{key}|{value}|" for key, value in vars(args).items()])),
+    )
+
+    # Video setup
+    if args.capture_video:
+        video_dir = f"videos/{run_name}"
+        video_fps = envs.envs[0].metadata.get("render_fps", 30)
+        os.makedirs(video_dir, exist_ok=True)
+    
     actor = Actor(envs).to(device)
     qf1 = SoftQNetwork(envs).to(device)
     qf2 = SoftQNetwork(envs).to(device)
@@ -220,7 +212,6 @@ if __name__ == "__main__":
     qf2_target = SoftQNetwork(envs).to(device)
     qf1_target.load_state_dict(qf1.state_dict())
     qf2_target.load_state_dict(qf2.state_dict())
-
     q_optimizer = optim.Adam(list(qf1.parameters()) + list(qf2.parameters()), lr=args.q_lr)
     actor_optimizer = optim.Adam(list(actor.parameters()), lr=args.policy_lr)
 
@@ -248,69 +239,89 @@ if __name__ == "__main__":
     obs, _ = envs.reset(seed=args.seed)
 
     for global_step in range(args.total_timesteps):
-        # ALGO LOGIC: put action logic here
         if global_step < args.learning_starts:
-            actions = np.array([envs.single_action_space.sample() for _ in range(envs.num_envs)])
+            actions = np.array(
+                [envs.single_action_space.sample() for _ in range(envs.num_envs)],
+                dtype=np.float32,
+            )
         else:
-            actions, _, _ = actor.get_action(torch.Tensor(obs).to(device))
+            obs_tensor = torch.as_tensor(obs, dtype=torch.float32, device=device)
+            actions, _, _ = actor.get_action(obs_tensor)
             actions = actions.detach().cpu().numpy()
 
         # TRY NOT TO MODIFY: execute the game and log data.
         next_obs, rewards, terminations, truncations, infos = envs.step(actions)
 
+        if args.capture_video:
+            frame = envs.envs[0].unwrapped.render()
+            episode_frames.append(frame)
+
         # TRY NOT TO MODIFY: record rewards for plotting purposes
-        if "final_info" in infos:
-            for info in infos["final_info"]:
-                if info is not None:
-                    print(
-                        "global_step={0}, episodic_return={1}".format(
-                            global_step, info["episode"]["r"]
-                        )
-                    )
-                    writer.add_scalar("charts/episodic_return", info["episode"]["r"], global_step)
-                    writer.add_scalar("charts/episodic_length", info["episode"]["l"], global_step)
-                    break
-        elif "episode" in infos:
-            for i, done in enumerate(infos.get("_episode", [])):
-                if done:
+        if "episode" in infos:
+            for i, finished in enumerate(infos["_episode"]):
+                if finished:
                     ep_return = infos["episode"]["r"][i].item()
                     ep_length = infos["episode"]["l"][i].item()
-                    print(
-                        "global_step={0}, episodic_return={1:.3f}".format(global_step, ep_return)
-                    )
+
+                    print(f"global_step={global_step}, episode={episode_count}, episodic_return={ep_return:.3f}")
                     writer.add_scalar("charts/episodic_return", ep_return, global_step)
                     writer.add_scalar("charts/episodic_length", ep_length, global_step)
 
+                    if args.capture_video:
+                        if ep_return > best_episode_return:
+                            video_name = f"best_step-{global_step}_episode-{episode_count}"
+                            video_path = f"videos/{run_name}/{video_name}.mp4"
+                            imageio.mimsave(video_path, episode_frames, fps=video_fps)
+                            print(f"    -> Best video saved: {video_path}")
+
+                            if args.track:
+                                wandb.log({video_name: wandb.Video(video_path, fps=video_fps, format="mp4")}, step=global_step)
+                        elif episode_count % args.video_every == 0:
+                            video_name = f"train_step-{global_step}_episode-{episode_count}"
+                            video_path = f"videos/{run_name}/{video_name}.mp4"
+                            imageio.mimsave(video_path, episode_frames, fps=video_fps)
+                            print(f"    -> Train video saved: {video_path}")
+
+                            if args.track:
+                                wandb.log({video_name: wandb.Video(video_path, fps=video_fps, format="mp4")}, step=global_step)
+
+                    if ep_return > best_episode_return:
+                        best_episode_return = ep_return
+                        torch.save({
+                            "actor": actor.state_dict(),
+                            "qf1": qf1.state_dict(),
+                            "qf2": qf2.state_dict(),
+                            "global_step": global_step,
+                            "episodic_return": ep_return,
+                        }, best_episode_path)
+                        print(f"    -> New best: episodic_return={ep_return:.3f}")
+                    
+                    episode_frames = []
+                    episode_count += 1
+
         # TRY NOT TO MODIFY: save data to replay buffer; handle `final_observation`
         real_next_obs = next_obs.copy()
-        final_observations = infos.get("final_observation")
-        final_observation_mask = infos.get("_final_observation")
-
         for idx, trunc in enumerate(truncations):
-            if not trunc:
-                continue
-            if final_observations is None:
-                continue
-            if final_observation_mask is None or final_observation_mask[idx]:
-                real_next_obs[idx] = final_observations[idx]
+            if trunc:
+                if "final_observation" in infos:
+                    real_next_obs[idx] = infos["final_observation"][idx]
+                elif "final_info" in infos and infos["final_info"][idx] is not None:
+                    real_next_obs[idx] = infos["final_info"][idx]["terminal_observation"]
+
 
         rb.add(obs, real_next_obs, actions, rewards, terminations, infos)
-
         # TRY NOT TO MODIFY: CRUCIAL step easy to overlook
         obs = next_obs
 
         # ALGO LOGIC: training.
         if global_step > args.learning_starts:
             data = rb.sample(args.batch_size)
-
             with torch.no_grad():
                 next_state_actions, next_state_log_pi, _ = actor.get_action(data.next_observations)
                 qf1_next_target = qf1_target(data.next_observations, next_state_actions)
                 qf2_next_target = qf2_target(data.next_observations, next_state_actions)
                 min_qf_next_target = torch.min(qf1_next_target, qf2_next_target) - alpha * next_state_log_pi
-                next_q_value = data.rewards.flatten() + (
-                    1 - data.dones.flatten()
-                ) * args.gamma * min_qf_next_target.view(-1)
+                next_q_value = data.rewards.flatten() + (1 - data.dones.flatten()) * args.gamma * (min_qf_next_target).view(-1)
 
             qf1_a_values = qf1(data.observations, data.actions).view(-1)
             qf2_a_values = qf2(data.observations, data.actions).view(-1)
@@ -323,8 +334,10 @@ if __name__ == "__main__":
             qf_loss.backward()
             q_optimizer.step()
 
-            if global_step % args.policy_frequency == 0:
-                for _ in range(args.policy_frequency):
+            if global_step % args.policy_frequency == 0:  # TD 3 Delayed update support
+                for _ in range(
+                    args.policy_frequency
+                ):  # compensate for the delay by doing 'actor_update_interval' instead of 1
                     pi, log_pi, _ = actor.get_action(data.observations)
                     qf1_pi = qf1(data.observations, pi)
                     qf2_pi = qf2(data.observations, pi)
@@ -360,13 +373,16 @@ if __name__ == "__main__":
                 writer.add_scalar("losses/qf_loss", qf_loss.item() / 2.0, global_step)
                 writer.add_scalar("losses/actor_loss", actor_loss.item(), global_step)
                 writer.add_scalar("losses/alpha", alpha, global_step)
-
-                sps = int(global_step / (time.time() - start_time))
-                print("SPS:", sps)
-                writer.add_scalar("charts/SPS", sps, global_step)
-
+                writer.add_scalar(
+                    "charts/SPS",
+                    int(global_step / (time.time() - start_time)),
+                    global_step,
+                )
                 if args.autotune:
                     writer.add_scalar("losses/alpha_loss", alpha_loss.item(), global_step)
 
     envs.close()
     writer.close()
+
+    if args.track:
+        wandb.finish()
