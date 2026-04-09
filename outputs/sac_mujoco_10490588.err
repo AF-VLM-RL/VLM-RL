@@ -1,0 +1,87 @@
+Resolved 150 packages in 14ms
+Audited 93 packages in 3.97s
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/envs/registration.py:519: DeprecationWarning: [33mWARN: The environment InvertedPendulum-v4 is out of date. You should consider upgrading to version `v5`.[0m
+  logger.deprecation(
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from /home/yang2739/.netrc.
+wandb: Currently logged in as: yang2739 (sohn5312-purdue-university) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.25.1
+wandb: Run data is saved locally in /home/yang2739/CS490/VLM-RL/wandb/run-20260330_023123-48way1bt
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run InvertedPendulum-v4_sac_vlm_10490588
+wandb: ⭐️ View project at https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments
+wandb: 🚀 View run at https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments/runs/48way1bt
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:134: UserWarning: [33mWARN: The obs returned by the `reset()` method was expecting numpy array dtype to be <class 'numpy.float32'>, actual type: float64[0m
+  logger.warn(
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:158: UserWarning: [33mWARN: The obs returned by the `reset()` method is not within the observation space.[0m
+  logger.warn(f"{pre} is not within the observation space.")
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:134: UserWarning: [33mWARN: The obs returned by the `step()` method was expecting numpy array dtype to be <class 'numpy.float32'>, actual type: float64[0m
+  logger.warn(
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:158: UserWarning: [33mWARN: The obs returned by the `step()` method is not within the observation space.[0m
+  logger.warn(f"{pre} is not within the observation space.")
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING Step cannot be set when using tensorboard syncing. Please use `run.define_metric(...)` to define a custom metric to log your step values.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: updating run metadata
+wandb: uploading output.log; uploading wandb-summary.json; uploading config.yaml
+wandb: uploading output.log; uploading runs/InvertedPendulum-v4_sac_vlm_10490588/events.out.tfevents.1774852303.gilbreth-k029.rcac.purdue.edu.3544092.0
+wandb: 
+wandb: Run history:
+wandb:             charts/SPS ▁▁▁▃▃▆▆▆██▆▆▆▆▆▆▁▁▃▃▃▃▃▃▃▆▆▆▆▆▆▆▆▆▆▆▆▆▆▆
+wandb: charts/episodic_length ▁▁███▁████▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: charts/episodic_return ▂▂▂▂▄▃▂▆▆█▃▃▃▃▂▃▃▄▄▅▄▅▁▄▄▃▂▆▃▃▂▆▂▅▁▂▅▅▃▁
+wandb:            global_step ▁▁▁▁▁▂▂▂▂▂▂▃▃▃▄▅▅▅▅▆▆▆▆▇▇▇▇▇▇▇▇▇▇███████
+wandb:      losses/actor_loss ▁▂▂▂▃▃▃▄▄▄▄▄▅▅▅▆▆▆▆▆▆▇▇▇▇▇▇▇▇▇███████▇▇▇
+wandb:           losses/alpha █▄▇█▄▂▃▂▃▂▁▁▁▁▁▁▁▁▁▁▂▁▁▁▂▂▂▂▂▂▁▃▃▃▄▆▄▄▄▃
+wandb:      losses/alpha_loss █▄▃▃▃▃▃▃▂▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▃▂▃▄▃▃▁▂▃▃
+wandb:        losses/qf1_loss ▂▂▂▂▁▃▁▁▂▁▁▂▁▁▂▁▂▁▂▂▂▂▂▂▂▂█▁▂▃▂▂▂▂▂▃▂▁▂▂
+wandb:      losses/qf1_values ▁▂▆██▆▅▅▅▄▄▄▃▃▃▃▃▃▃▃▂▂▂▂▂▂▂▁▂▂▂▂▁▁▁▁▁▂▁▂
+wandb:        losses/qf2_loss █▅▆█▄▄▃▂▂▃▁▁▁▂▁▃▂▂▃▄▃▂▂▂▃▂▄▁▂▃▂▁▄▃▃▃▂▂▂▂
+wandb:                     +2 ...
+wandb: 
+wandb: Run summary:
+wandb:             charts/SPS 100
+wandb: charts/episodic_length 31
+wandb: charts/episodic_return 377.67987
+wandb:            global_step 999983
+wandb:      losses/actor_loss -109.93323
+wandb:           losses/alpha 0.08228
+wandb:      losses/alpha_loss -0.00139
+wandb:        losses/qf1_loss 91.42456
+wandb:      losses/qf1_values 109.8967
+wandb:        losses/qf2_loss 84.78708
+wandb:                     +2 ...
+wandb: 
+wandb: 🚀 View run InvertedPendulum-v4_sac_vlm_10490588 at: https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments/runs/48way1bt
+wandb: ⭐️ View project at: https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments
+wandb: Synced 8 W&B file(s), 32 media file(s), 0 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20260330_023123-48way1bt/logs

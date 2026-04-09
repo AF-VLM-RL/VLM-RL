@@ -1,0 +1,59 @@
+/var/spool/slurm/job10479791/slurm_script: line 28: cd: /home/yang2739/VLM-RL: No such file or directory
+Resolved 150 packages in 15ms
+Audited 93 packages in 4.37s
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from /home/yang2739/.netrc.
+wandb: Currently logged in as: yang2739 (sohn5312-purdue-university) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run n2s69mru
+wandb: Tracking run with wandb version 0.25.1
+wandb: Run data is saved locally in /home/yang2739/CS490/VLM-RL/wandb/run-20260327_151005-n2s69mru
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run Ant-v4_sac_clip_multiframe_10479791
+wandb: ⭐️ View project at https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments
+wandb: 🚀 View run at https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments/runs/n2s69mru
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/envs/registration.py:519: DeprecationWarning: [33mWARN: The environment Ant-v4 is out of date. You should consider upgrading to version `v5`.[0m
+  logger.deprecation(
+'(ReadTimeoutError("HTTPSConnectionPool(host='huggingface.co', port=443): Read timed out. (read timeout=10)"), '(Request ID: 115e237f-41d7-4d8d-8eec-0a4058ae4fd9)')' thrown while requesting HEAD https://huggingface.co/openai/clip-vit-base-patch32/resolve/main/config.json
+Retrying in 1s [Retry 1/5].
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:134: UserWarning: [33mWARN: The obs returned by the `reset()` method was expecting numpy array dtype to be <class 'numpy.float32'>, actual type: float64[0m
+  logger.warn(
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:158: UserWarning: [33mWARN: The obs returned by the `reset()` method is not within the observation space.[0m
+  logger.warn(f"{pre} is not within the observation space.")
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:134: UserWarning: [33mWARN: The obs returned by the `step()` method was expecting numpy array dtype to be <class 'numpy.float32'>, actual type: float64[0m
+  logger.warn(
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:158: UserWarning: [33mWARN: The obs returned by the `step()` method is not within the observation space.[0m
+  logger.warn(f"{pre} is not within the observation space.")
+wandb: updating run metadata
+wandb: uploading runs/Ant-v4_sac_clip_multiframe_10479791/events.out.tfevents.1774638622.gilbreth-g001.rcac.purdue.edu.357599.0; uploading output.log; uploading wandb-summary.json; uploading config.yaml
+wandb: uploading runs/Ant-v4_sac_clip_multiframe_10479791/events.out.tfevents.1774638622.gilbreth-g001.rcac.purdue.edu.357599.0; uploading output.log
+wandb: uploading history steps 94226-94252, summary, console lines 65943-65945
+wandb: 
+wandb: Run history:
+wandb:             charts/SPS █▅▅▄▄▃▃▃▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: charts/episodic_length ██▁▁▁▁▂▂█▁███▁▁█▁█▁█▁█▁█▁▁█▁▁▁▁█▁█▁▁████
+wandb: charts/episodic_return ▃▂▄▂▁▃▃▁▂▂▆▄▂▂▃▂▂▁▂▂▂▁▄▁▃▃▅▅▄▁▃▂▂▅▅▆▅▅▃█
+wandb:            global_step ▁▁▁▁▂▂▂▂▂▂▃▃▃▃▃▄▄▄▄▄▄▄▅▅▅▅▅▅▅▆▆▆▇▇▇▇▇███
+wandb:      losses/actor_loss ▁▁▆▇▇▇███████▇▆▆▄▅▅▃▃▃▃▄▄▃▃▄▅▄▄▄▄▄▂▄▄▃▄▅
+wandb:           losses/alpha ▂▂▁▁▂▃▄▄▄▃▃▄▄▅▅▆▇███▆▇▇▅▅▅▆▆▆▆▆▅▅▅▅▃▄▄▄▆
+wandb:      losses/alpha_loss ▅▅▃▄▃▅▆▃▂▅▆▃▂▃▄▄▁▅█▆▃▆▆▄▅▆▁▂▅▄▆▆▃▅▅▂▃▅▆▄
+wandb:        losses/qf1_loss ▃▃▄▅▂▁▂▁▃▁▇▃▂▄▂▂▃▃▃▄▂▄▂▂▂▃▁▃▃▇▂▂▁▁█▃▁▂▃▅
+wandb:      losses/qf1_values ▅▅▃▃▂▂▂▂▂▁▁▁▂▄▄▄▄▅▅▄▄▄▆▅▅▄▄▄█▅▄▅▅▅▅▄▄▃▄▄
+wandb:        losses/qf2_loss ▂▃▂▂▂▂▁▂▁▂▁▁▂▂▁▄█▂▂▂▂▁▂▁▁▂▂▂▁▂▂▂▂▁▁▁▁▂▁▁
+wandb:                     +2 ...
+wandb: 
+wandb: Run summary:
+wandb:             charts/SPS 92
+wandb: charts/episodic_length 1000
+wandb: charts/episodic_return 11.70104
+wandb:            global_step 999900
+wandb:      losses/actor_loss -19.55299
+wandb:           losses/alpha 0.0442
+wandb:      losses/alpha_loss 0.01105
+wandb:        losses/qf1_loss 3.21494
+wandb:      losses/qf1_values 18.77788
+wandb:        losses/qf2_loss 3.34426
+wandb:                     +2 ...
+wandb: 
+wandb: 🚀 View run Ant-v4_sac_clip_multiframe_10479791 at: https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments/runs/n2s69mru
+wandb: ⭐️ View project at: https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments
+wandb: Synced 8 W&B file(s), 0 media file(s), 0 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20260327_151005-n2s69mru/logs

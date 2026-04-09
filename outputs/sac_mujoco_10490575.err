@@ -1,0 +1,108 @@
+Resolved 150 packages in 16ms
+Audited 93 packages in 830ms
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/envs/registration.py:519: DeprecationWarning: [33mWARN: The environment Reacher-v4 is out of date. You should consider upgrading to version `v5`.[0m
+  logger.deprecation(
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from /home/yang2739/.netrc.
+wandb: Currently logged in as: yang2739 (sohn5312-purdue-university) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run fiublgc2
+wandb: Tracking run with wandb version 0.25.1
+wandb: Run data is saved locally in /home/yang2739/CS490/VLM-RL/wandb/run-20260330_021911-fiublgc2
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run Reacher-v4_sac_vlm_10490575
+wandb: ⭐️ View project at https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments
+wandb: 🚀 View run at https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments/runs/fiublgc2
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:134: UserWarning: [33mWARN: The obs returned by the `reset()` method was expecting numpy array dtype to be <class 'numpy.float32'>, actual type: float64[0m
+  logger.warn(
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:158: UserWarning: [33mWARN: The obs returned by the `reset()` method is not within the observation space.[0m
+  logger.warn(f"{pre} is not within the observation space.")
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:134: UserWarning: [33mWARN: The obs returned by the `step()` method was expecting numpy array dtype to be <class 'numpy.float32'>, actual type: float64[0m
+  logger.warn(
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:158: UserWarning: [33mWARN: The obs returned by the `step()` method is not within the observation space.[0m
+  logger.warn(f"{pre} is not within the observation space.")
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING Step cannot be set when using tensorboard syncing. Please use `run.define_metric(...)` to define a custom metric to log your step values.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: updating run metadata
+wandb: uploading wandb-summary.json; uploading config.yaml; uploading runs/Reacher-v4_sac_vlm_10490575/events.out.tfevents.1774851556.gilbreth-k026.rcac.purdue.edu.1877957.0; uploading history steps 128612-128806, summary, console lines 98053-98163; uploading output.log
+wandb: uploading runs/Reacher-v4_sac_vlm_10490575/events.out.tfevents.1774851556.gilbreth-k026.rcac.purdue.edu.1877957.0
+wandb: 
+wandb: Run history:
+wandb:             charts/SPS █▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: charts/episodic_length ▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: charts/episodic_return ▄▃▄▂▃▃▃▂▆▆▄▂█▅▆▄▄▄▅▂▁▆▁▅▃▃▂▄▂▆▅▃▂▅▃▇▃▃▃▃
+wandb:            global_step ▁▁▁▂▂▂▂▂▂▂▃▃▃▃▃▃▃▃▃▄▅▅▅▅▅▆▆▆▆▆▆▆▆▆▇▇▇███
+wandb:      losses/actor_loss ▆▆▁▃▆▅▆▇▆▆▇▇█▇▇███▇▇▇▆▆▆▆▆▅▆▆▅▆▆▅▆▆▆▆▆▆▆
+wandb:           losses/alpha █▄▄▃▄▃▃▃▃▃▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:      losses/alpha_loss ▁▃▇▆▄█▄▄▂▃▄▅▃▄▄▆▄▅▃▃▃▆▃▁▄▃▅▃▄▂▁▆▅▃▃▄▂▅▄▃
+wandb:        losses/qf1_loss ▅▃▆▄▂▄█▇▆▃▇▃▅▅▇▃▂▂▄▅▅▄▅▃▂▅▁▂▅▃▃▁▅▃▄▄▄▂▄▂
+wandb:      losses/qf1_values ▄███▄▄▃▃▂▃▃▃▃▁▁▁▂▂▂▂▂▃▃▄▃▄▄▄▄▄▄▄▄▄▄▄▄▄▃▄
+wandb:        losses/qf2_loss ▁▄▃▄█▁▄▂▃▆▂▃▄▂▅▁▂▂▃▂▁▂▆▄▃▂▆▂▃▂▂▂▂▁▃▄▃▃▂▂
+wandb:                     +2 ...
+wandb: 
+wandb: Run summary:
+wandb:             charts/SPS 90
+wandb: charts/episodic_length 50
+wandb: charts/episodic_return 42.70732
+wandb:            global_step 999955
+wandb:      losses/actor_loss -230.18887
+wandb:           losses/alpha 0.13315
+wandb:      losses/alpha_loss 0.02395
+wandb:        losses/qf1_loss 146.79214
+wandb:      losses/qf1_values 230.48328
+wandb:        losses/qf2_loss 159.6054
+wandb:                     +2 ...
+wandb: 
+wandb: 🚀 View run Reacher-v4_sac_vlm_10490575 at: https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments/runs/fiublgc2
+wandb: ⭐️ View project at: https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments
+wandb: Synced 8 W&B file(s), 52 media file(s), 0 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20260330_021911-fiublgc2/logs

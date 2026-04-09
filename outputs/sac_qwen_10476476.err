@@ -1,0 +1,70 @@
+/var/spool/slurm/job10476476/slurm_script: line 28: cd: /home/yang2739/VLM-RL: No such file or directory
+Resolved 150 packages in 17ms
+Audited 93 packages in 3.83s
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from /home/yang2739/.netrc.
+wandb: Currently logged in as: yang2739 (sohn5312-purdue-university) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run 2tr1mldz
+wandb: Tracking run with wandb version 0.25.1
+wandb: Run data is saved locally in /home/yang2739/CS490/VLM-RL/wandb/run-20260326_184211-2tr1mldz
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run Ant-v4_sac_qwen_multiframe_10476476
+wandb: ⭐️ View project at https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments
+wandb: 🚀 View run at https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments/runs/2tr1mldz
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/envs/registration.py:519: DeprecationWarning: [33mWARN: The environment Ant-v4 is out of date. You should consider upgrading to version `v5`.[0m
+  logger.deprecation(
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [02:23<02:23, 143.92s/it]Loading checkpoint shards: 100%|██████████| 2/2 [02:35<00:00, 66.29s/it] Loading checkpoint shards: 100%|██████████| 2/2 [02:35<00:00, 77.93s/it]
+The image processor of type `Qwen2VLImageProcessor` is now loaded as a fast processor by default, even if the model checkpoint was saved with a slow processor. This is a breaking change and may produce slightly different outputs. To continue using the slow processor, instantiate this class with `use_fast=False`. Note that this behavior will be extended to all models in a future release.
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:134: UserWarning: [33mWARN: The obs returned by the `reset()` method was expecting numpy array dtype to be <class 'numpy.float32'>, actual type: float64[0m
+  logger.warn(
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:158: UserWarning: [33mWARN: The obs returned by the `reset()` method is not within the observation space.[0m
+  logger.warn(f"{pre} is not within the observation space.")
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:134: UserWarning: [33mWARN: The obs returned by the `step()` method was expecting numpy array dtype to be <class 'numpy.float32'>, actual type: float64[0m
+  logger.warn(
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:158: UserWarning: [33mWARN: The obs returned by the `step()` method is not within the observation space.[0m
+  logger.warn(f"{pre} is not within the observation space.")
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: updating run metadata
+wandb: uploading media/videos/video_5_7feeeec366beed5b6744.mp4; uploading config.yaml; uploading media/videos/video_0_c5661409e557d659eaa3.mp4; uploading media/videos/video_1_7e6360cfdc36ae53cbb8.mp4; uploading media/videos/video_3_acea84c1ca620716b2c6.mp4 (+ 10 more)
+wandb: uploading output.log; uploading media/videos/video_2_ad7d3acd89947c81a616.mp4; uploading runs/Ant-v4_sac_qwen_multiframe_10476476/events.out.tfevents.1774564965.gilbreth-h007.rcac.purdue.edu.834503.0
+wandb: 
+wandb: Run history:
+wandb:             charts/SPS ▁▁█▁███████▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁█████████████
+wandb: charts/episodic_length ▁▁▂▁▁███████████████████████████████████
+wandb: charts/episodic_return ▂▁▁▂▁▁▁▃█▇▇█████████▇███████████████████
+wandb:            global_step ▁▁▁▂▂▂▂▂▂▂▂▃▃▃▃▄▄▄▄▄▄▅▅▅▅▆▆▆▆▆▆▇▇▇▇█████
+wandb:      losses/actor_loss █▅▃▂▂▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           losses/alpha █▆▅▄▄▃▂▁▁▂▂▁▁▁▂▂▂▃▃▂▂▃▁▁▂▂▂▃▃▃▂▂▃▂▂▂▂▂▂▂
+wandb:      losses/alpha_loss █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:        losses/qf1_loss ▃▃▃▁▄▁▂▁▁█▃▁▁▁▃▁▁▁▁▁▁▁▁▁▁▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁
+wandb:      losses/qf1_values ▁▆▆▇▇▇▇█▇▇██████████████████████████████
+wandb:        losses/qf2_loss ▆▂▂▁▁▁▂▁▁▂█▂▁▁▁▁▁▂▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▂▁▁▁▁
+wandb:                     +2 ...
+wandb: 
+wandb: Run summary:
+wandb:             charts/SPS 33
+wandb: charts/episodic_length 1000
+wandb: charts/episodic_return 817.30664
+wandb:            global_step 999937
+wandb:      losses/actor_loss -78.02548
+wandb:           losses/alpha 0.00128
+wandb:      losses/alpha_loss 0.00153
+wandb:        losses/qf1_loss 0.00897
+wandb:      losses/qf1_values 78.02135
+wandb:        losses/qf2_loss 0.00774
+wandb:                     +2 ...
+wandb: 
+wandb: 🚀 View run Ant-v4_sac_qwen_multiframe_10476476 at: https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments/runs/2tr1mldz
+wandb: ⭐️ View project at: https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments
+wandb: Synced 8 W&B file(s), 11 media file(s), 0 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20260326_184211-2tr1mldz/logs

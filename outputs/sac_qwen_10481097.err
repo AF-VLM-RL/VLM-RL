@@ -1,0 +1,42 @@
+/var/spool/slurm/job10481097/slurm_script: line 28: cd: /home/yang2739/VLM-RL: No such file or directory
+Resolved 150 packages in 15ms
+Audited 93 packages in 1.99s
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from /home/yang2739/.netrc.
+wandb: Currently logged in as: yang2739 (sohn5312-purdue-university) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run r3nz1qxw
+wandb: Tracking run with wandb version 0.25.1
+wandb: Run data is saved locally in /home/yang2739/CS490/VLM-RL/wandb/run-20260328_003324-r3nz1qxw
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run Ant-v4_sac_vlm_10481097
+wandb: ⭐️ View project at https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments
+wandb: 🚀 View run at https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments/runs/r3nz1qxw
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/envs/registration.py:519: DeprecationWarning: [33mWARN: The environment Ant-v4 is out of date. You should consider upgrading to version `v5`.[0m
+  logger.deprecation(
+`torch_dtype` is deprecated! Use `dtype` instead!
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [02:05<02:05, 125.22s/it]Loading checkpoint shards: 100%|██████████| 2/2 [02:18<00:00, 59.29s/it] Loading checkpoint shards: 100%|██████████| 2/2 [02:18<00:00, 69.18s/it]
+The image processor of type `Qwen2VLImageProcessor` is now loaded as a fast processor by default, even if the model checkpoint was saved with a slow processor. This is a breaking change and may produce slightly different outputs. To continue using the slow processor, instantiate this class with `use_fast=False`. Note that this behavior will be extended to all models in a future release.
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:134: UserWarning: [33mWARN: The obs returned by the `reset()` method was expecting numpy array dtype to be <class 'numpy.float32'>, actual type: float64[0m
+  logger.warn(
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:158: UserWarning: [33mWARN: The obs returned by the `reset()` method is not within the observation space.[0m
+  logger.warn(f"{pre} is not within the observation space.")
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:134: UserWarning: [33mWARN: The obs returned by the `step()` method was expecting numpy array dtype to be <class 'numpy.float32'>, actual type: float64[0m
+  logger.warn(
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:158: UserWarning: [33mWARN: The obs returned by the `step()` method is not within the observation space.[0m
+  logger.warn(f"{pre} is not within the observation space.")
+wandb: uploading config.yaml; uploading runs/Ant-v4_sac_vlm_10481097/events.out.tfevents.1774672425.gilbreth-k042.rcac.purdue.edu.1778454.0; uploading output.log; uploading wandb-summary.json
+wandb: uploading history steps 12-13, summary, console lines 501-528
+wandb: 
+wandb: Run history:
+wandb: charts/episodic_length ▇▇▃█▇▁▄
+wandb: charts/episodic_return █▁▆█▇▆▆
+wandb:            global_step ▁▁▃▃▃▃▅▅▇▇▇▇██
+wandb: 
+wandb: Run summary:
+wandb: charts/episodic_length 109
+wandb: charts/episodic_return 97.73785
+wandb:            global_step 994
+wandb: 
+wandb: 🚀 View run Ant-v4_sac_vlm_10481097 at: https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments/runs/r3nz1qxw
+wandb: ⭐️ View project at: https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments
+wandb: Synced 8 W&B file(s), 0 media file(s), 0 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20260328_003324-r3nz1qxw/logs

@@ -1,0 +1,57 @@
+/var/spool/slurm/job10479799/slurm_script: line 28: cd: /home/yang2739/VLM-RL: No such file or directory
+Resolved 150 packages in 10ms
+Audited 93 packages in 199ms
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from /home/yang2739/.netrc.
+wandb: Currently logged in as: yang2739 (sohn5312-purdue-university) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run xcyikol6
+wandb: Tracking run with wandb version 0.25.1
+wandb: Run data is saved locally in /home/yang2739/CS490/VLM-RL/wandb/run-20260327_151005-xcyikol6
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run Ant-v4_sac_clip_multiframe_10479799
+wandb: ⭐️ View project at https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments
+wandb: 🚀 View run at https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments/runs/xcyikol6
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/envs/registration.py:519: DeprecationWarning: [33mWARN: The environment Ant-v4 is out of date. You should consider upgrading to version `v5`.[0m
+  logger.deprecation(
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:134: UserWarning: [33mWARN: The obs returned by the `reset()` method was expecting numpy array dtype to be <class 'numpy.float32'>, actual type: float64[0m
+  logger.warn(
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:158: UserWarning: [33mWARN: The obs returned by the `reset()` method is not within the observation space.[0m
+  logger.warn(f"{pre} is not within the observation space.")
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:134: UserWarning: [33mWARN: The obs returned by the `step()` method was expecting numpy array dtype to be <class 'numpy.float32'>, actual type: float64[0m
+  logger.warn(
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:158: UserWarning: [33mWARN: The obs returned by the `step()` method is not within the observation space.[0m
+  logger.warn(f"{pre} is not within the observation space.")
+wandb: updating run metadata
+wandb: uploading output.log; uploading wandb-summary.json; uploading config.yaml; uploading runs/Ant-v4_sac_clip_multiframe_10479799/events.out.tfevents.1774638622.gilbreth-g011.rcac.purdue.edu.1336377.0
+wandb: uploading output.log; uploading runs/Ant-v4_sac_clip_multiframe_10479799/events.out.tfevents.1774638622.gilbreth-g011.rcac.purdue.edu.1336377.0
+wandb: uploading history steps 141919-141978, summary, console lines 159102-159155
+wandb: 
+wandb: Run history:
+wandb:             charts/SPS █▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: charts/episodic_length ▁▁▂▁▁▁▁█▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: charts/episodic_return ▅█▆▂▆▄▄▃▅▄▄▄▄▄▄▄▄▄▄▄▄▆▁▄▄▄▁▄▄▄▄▃▄▄▆▇▄▄▄▄
+wandb:            global_step ▁▁▁▂▂▃▃▄▄▄▄▄▅▅▅▅▅▅▅▅▅▆▆▆▆▆▆▆▆▆▆▆▆▆▇▇████
+wandb:      losses/actor_loss ▇▇███▄▆▆▇▇▇▇▇▇▇▇▆▇███████▇▇▇▇▇▄▁▂▆▆▆▆▆▆▆
+wandb:           losses/alpha █▂▂▁▁▁▁▁▂▂▁▁▁▁▁▁▁▁▁▂▁▁▁▁▁▁▂▂▂▂▂▂▂▃▃▂▁▁▁▁
+wandb:      losses/alpha_loss █▁▁▂▁▁▂▁▁▁▁▁▂▁▂▂▁▁▁▂▁▁▂▁▁▁▁▁▁▂▁▂▁▂▂▂▁▁▁▁
+wandb:        losses/qf1_loss ▅▄▅▂▅▄▄▄█▄▃▆▇▃▃▄▅▅▂▃▄▂▃▃▃▆▂▂▃▆▆▄▃▂▃▅█▂▁▄
+wandb:      losses/qf1_values ▆▅▂▂▂▁▁▅▄▄▃▃▃▃▂▂▂▂▂▂▁▁▁▁▁▁▁▁▁▂▂▂▂▂▂▂▃▇█▃
+wandb:        losses/qf2_loss ▂▂▂▂▂▂▂▂▂▃▂▂▁▂▂▁▃▂▃▂▂▂▂▂▁▁▃▁▁▂▁▁▂▃▃█▂▃▂▂
+wandb:                     +2 ...
+wandb: 
+wandb: Run summary:
+wandb:             charts/SPS 84
+wandb: charts/episodic_length 8
+wandb: charts/episodic_return 11.75276
+wandb:            global_step 999993
+wandb:      losses/actor_loss -7.74053
+wandb:           losses/alpha 0.02453
+wandb:      losses/alpha_loss -0.01024
+wandb:        losses/qf1_loss 10.3465
+wandb:      losses/qf1_values 7.81553
+wandb:        losses/qf2_loss 10.2541
+wandb:                     +2 ...
+wandb: 
+wandb: 🚀 View run Ant-v4_sac_clip_multiframe_10479799 at: https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments/runs/xcyikol6
+wandb: ⭐️ View project at: https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments
+wandb: Synced 8 W&B file(s), 0 media file(s), 0 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20260327_151005-xcyikol6/logs

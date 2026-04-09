@@ -1,0 +1,67 @@
+/var/spool/slurm/job10476478/slurm_script: line 28: cd: /home/yang2739/VLM-RL: No such file or directory
+Resolved 150 packages in 13ms
+Audited 93 packages in 3.37s
+wandb: [wandb.login()] Loaded credentials for https://api.wandb.ai from /home/yang2739/.netrc.
+wandb: Currently logged in as: yang2739 (sohn5312-purdue-university) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run 874s87d6
+wandb: Tracking run with wandb version 0.25.1
+wandb: Run data is saved locally in /home/yang2739/CS490/VLM-RL/wandb/run-20260326_184446-874s87d6
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run Ant-v4_sac_clip_multiframe_10476478
+wandb: ⭐️ View project at https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments
+wandb: 🚀 View run at https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments/runs/874s87d6
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/envs/registration.py:519: DeprecationWarning: [33mWARN: The environment Ant-v4 is out of date. You should consider upgrading to version `v5`.[0m
+  logger.deprecation(
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:134: UserWarning: [33mWARN: The obs returned by the `reset()` method was expecting numpy array dtype to be <class 'numpy.float32'>, actual type: float64[0m
+  logger.warn(
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:158: UserWarning: [33mWARN: The obs returned by the `reset()` method is not within the observation space.[0m
+  logger.warn(f"{pre} is not within the observation space.")
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:134: UserWarning: [33mWARN: The obs returned by the `step()` method was expecting numpy array dtype to be <class 'numpy.float32'>, actual type: float64[0m
+  logger.warn(
+/scratch/gilbreth/yang2739/VLM-RL-RUNS/venv/lib64/python3.9/site-packages/gymnasium/utils/passive_env_checker.py:158: UserWarning: [33mWARN: The obs returned by the `step()` method is not within the observation space.[0m
+  logger.warn(f"{pre} is not within the observation space.")
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: WARNING `fps` argument does not affect the frame rate of the video when providing a file path or raw bytes.
+wandb: updating run metadata
+wandb: uploading media/videos/video_5_30d8d2f3188b83180e7e.mp4; uploading output.log; uploading runs/Ant-v4_sac_clip_multiframe_10476478/events.out.tfevents.1774565119.gilbreth-k046.rcac.purdue.edu.3984263.0; uploading media/videos/video_10_cdb0905839cc004d63a9.mp4; uploading media/videos/video_0_b3bd8cbcaf83de704d8a.mp4 (+ 10 more)
+wandb: uploading output.log; uploading runs/Ant-v4_sac_clip_multiframe_10476478/events.out.tfevents.1774565119.gilbreth-k046.rcac.purdue.edu.3984263.0; uploading media/videos/video_6_ad6eb92ef5a069d47326.mp4
+wandb: 
+wandb: Run history:
+wandb:             charts/SPS █▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: charts/episodic_length ▂▁▂█▁▁▁█████████████████████████████████
+wandb: charts/episodic_return ▂▁▁▁▁▁▇▇▁▁▇█▇██▇█▇█▁▇████████▇██████████
+wandb:            global_step ▁▁▁▂▂▂▂▂▂▂▂▃▃▃▄▄▄▄▄▄▄▅▅▅▅▅▅▅▅▅▆▆▆▆▆▇▇▇▇█
+wandb:      losses/actor_loss ▆██▇▅▃▃▃▃▃▂▂▂▂▂▂▂▂▂▂▂▁▁▂▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:           losses/alpha █▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:      losses/alpha_loss ▆▄▂▂▅▄▂▄▄▃▁▂▄▅▁▃▄▃█▆▃▄▆▃▁▄▄▂▆▄▄▃▄▆▂▁▅▃▇▅
+wandb:        losses/qf1_loss █▃▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb:      losses/qf1_values ▂▁▃▂▂▄▅▆▆▆▆▆▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇▇█▇█████████
+wandb:        losses/qf2_loss █▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▃▁▁▁▁▁
+wandb:                     +2 ...
+wandb: 
+wandb: Run summary:
+wandb:             charts/SPS 115
+wandb: charts/episodic_length 1000
+wandb: charts/episodic_return 316.74268
+wandb:            global_step 999900
+wandb:      losses/actor_loss -30.88492
+wandb:           losses/alpha 0.00035
+wandb:      losses/alpha_loss 0.00056
+wandb:        losses/qf1_loss 0.0043
+wandb:      losses/qf1_values 30.95572
+wandb:        losses/qf2_loss 0.00578
+wandb:                     +2 ...
+wandb: 
+wandb: 🚀 View run Ant-v4_sac_clip_multiframe_10476478 at: https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments/runs/874s87d6
+wandb: ⭐️ View project at: https://wandb.ai/sohn5312-purdue-university/cleanrl-experiments
+wandb: Synced 8 W&B file(s), 11 media file(s), 0 artifact file(s) and 1 other file(s)
+wandb: Find logs at: ./wandb/run-20260326_184446-874s87d6/logs

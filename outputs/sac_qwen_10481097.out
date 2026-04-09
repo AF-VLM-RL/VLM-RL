@@ -1,0 +1,520 @@
+Job ID: 10481097
+GPU Info: NVIDIA A100 80GB PCIe
+Starting SAC + qwen in MuJoCo Ant environment training...
+Command: srun uv run python experiments/mujoco/sac_vlm.py   --env-id Ant-v4   --run-id 10481097   --seed 4   --total-timesteps 1000   --vlm-goal 'A four-legged ant robot walking forward to the right, upright on a flat surface.'   --vlm-n-frames 4   --vlm-frame-every 4   --vlm-clip-every 16   --track   --capture-video   --wandb-project-name cleanrl-experiments --vlm-model-type qwen --vlm-model-id Qwen/Qwen2-VL-2B-Instruct --video-every 100
+Qwen-VL Initialized: model=Qwen/Qwen2-VL-2B-Instruct, n_frames=4, frame_every=4, clip_every=16
+delta_reward=True, normalize_reward=True, reward_scale=10.0
+[VLM Description] The robot appears to be in a state of motion, likely moving or rotating. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is positioned with its arms extended outward, possibly in a resting or stationary state.
+2. **Frame 2**: The robot's arms are now bent at the elbows, suggesting a change in posture or movement.
+3. **Frame 3**: The robot's arms are fully extended, indicating a more dynamic or active state, possibly in the process of moving or rotating.
+4. **Frame 4**: The robot's arms are still extended, but the position appears slightly different, possibly due to a subtle movement or adjustment.
+
+Overall, the robot seems to be in a state of motion, with its arms changing their position and orientation across the frames.
+[VLM Debug] Reset raw score: 0.2847
+[VLM Description] The robot appears to be in a static pose, with its legs extended and its body positioned in a way that suggests it is either resting or preparing to move. The robot's limbs are spread out, and its head is positioned slightly above the center of its body. The background is a checkered pattern, which could be a floor or a surface the robot is on. The overall posture suggests a calm or stationary state.
+[VLM Debug] Step 16 | raw=0.0953 | shaped=0.0000 | reward_mean=-0.1893
+[VLM Description] The robot appears to be in a static pose, lying on its back on a checkered surface. The robot's limbs are extended outwards, and its head is positioned towards the center of the frame. The limbs are slightly bent, suggesting a relaxed or resting posture. The background is a gradient of light to dark gray, and the checkered surface has a pattern of alternating light and dark squares.
+[VLM Debug] Step 32 | raw=0.0526 | shaped=10.0000 | reward_mean=-0.1160
+[VLM Description] The robot appears to be in a state of motion, likely crawling or moving across a checkered surface. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is positioned on the checkered surface, with its legs extended and its body slightly bent.
+2. **Frame 2**: The robot's legs are more extended, and its body is slightly more bent, indicating a forward motion.
+3. **Frame 3**: The robot's legs are fully extended, and its body is more upright, suggesting it is moving forward.
+4. **Frame 4**: The robot's legs are still fully extended, and its body is more upright, indicating it is continuing to move forward.
+
+Overall, the robot is moving forward and stretching its legs, suggesting it is crawling or moving across the checkered surface.
+[VLM Debug] Step 48 | raw=0.5815 | shaped=13.8758 | reward_mean=0.0990
+[VLM Description] The robot appears to be in a static pose, with its legs extended and arms resting on the ground. Here is a description of the robot's movements across the frames:
+
+1. **Frame 1**: The robot is in a similar pose to the previous frame, with its legs extended and arms resting on the ground.
+2. **Frame 2**: The robot's legs are slightly bent, indicating a possible movement or adjustment in its posture.
+3. **Frame 3**: The robot's legs are fully extended, and its arms are also fully extended, suggesting a more dynamic pose.
+4. **Frame 4**: The robot's legs are slightly bent again, indicating a possible movement or adjustment in its posture.
+
+Overall, the robot seems to be in a state of rest or preparation for movement, with its legs and arms in various positions.
+[VLM Debug] Step 64 | raw=0.1896 | shaped=-10.7549 | reward_mean=-0.0238
+[VLM Description] The robot appears to be in a state of motion, likely crawling or moving across a checkered surface. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is positioned on the checkered surface, with its legs extended and its body slightly bent.
+2. **Frame 2**: The robot's legs are still extended, but its body is more bent, indicating a slight forward movement.
+3. **Frame 3**: The robot's legs are still extended, and its body is more bent, suggesting a continued forward motion.
+4. **Frame 4**: The robot's legs are still extended, and its body is more bent, indicating a steady forward movement. The robot's position on the checkered surface appears to be consistent with the previous frames.
+
+Overall, the robot seems to be moving forward and slightly bending its body, consistent with crawling or crawling-like movements across the checkered surface.
+[VLM Debug] Step 80 | raw=0.3774 | shaped=5.3294 | reward_mean=0.0186
+[VLM Description] The robot appears to be in a dynamic pose, likely in a physics simulation. Here is a description of its movements across the frames:
+
+1. **Frame 1**: The robot is in a stationary position, with its legs extended and its body slightly bent.
+2. **Frame 2**: The robot's legs are slightly bent, and its body is more curved, indicating a possible movement or transition.
+3. **Frame 3**: The robot's legs are fully extended, and its body is more curved, suggesting a more dynamic pose.
+4. **Frame 4**: The robot's legs are still fully extended, and its body is more curved, indicating a continuation of the dynamic pose.
+
+Overall, the robot seems to be in a state of motion, with its legs and body moving in a coordinated manner.
+[VLM Debug] Step 96 | raw=0.2942 | shaped=-2.9006 | reward_mean=0.0016
+[VLM Description] The robot appears to be in a static pose, with its legs extended and arms resting on the ground. Here is a description of the robot's movements across the frames:
+
+1. **Frame 1**: The robot is in a similar pose to the previous frame, with its legs extended and arms resting on the ground.
+2. **Frame 2**: The robot's legs are slightly bent, indicating a possible movement or adjustment in its posture.
+3. **Frame 3**: The robot's legs are fully extended, and its arms are also fully extended, suggesting a more dynamic pose.
+4. **Frame 4**: The robot's legs are slightly bent again, indicating a possible movement or adjustment in its posture.
+
+Overall, the robot seems to be in a state of rest or preparation for movement, with its limbs in various positions.
+[VLM Debug] Step 112 | raw=0.1666 | shaped=-4.0323 | reward_mean=-0.0169
+[VLM Description] The robot appears to be in a dynamic pose, likely in a physics simulation. Here is a description of the robot's movements across the frames:
+
+1. **Frame 1**: The robot is lying on its back with its arms and legs extended. The arms are slightly bent, and the legs are extended outward.
+
+2. **Frame 2**: The robot's arms are now bent at the elbows, and the legs are still extended outward. The arms are positioned more towards the center of the body, and the legs are slightly bent.
+
+3. **Frame 3**: The robot's arms are fully extended, and the legs are straight. The arms are positioned more towards the sides of the body, and the legs are straight and parallel.
+
+4. **Frame 4**: The robot's arms are now bent at the elbows, and the legs are still straight. The arms are positioned more towards the center of the body, and the legs are slightly bent.
+
+Overall, the robot's arms and legs are moving in a coordinated manner, suggesting a dynamic and active pose.
+[VLM Debug] Step 128 | raw=0.2690 | shaped=4.0171 | reward_mean=-0.0020
+[VLM Description] The robot appears to be in a state of motion, likely crawling or moving across a checkered surface. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is positioned on the checkered surface, with its legs extended and its body slightly bent.
+2. **Frame 2**: The robot's legs are more extended, and its body is more curved, indicating a forward motion.
+3. **Frame 3**: The robot's legs are still extended, and its body is more curved, suggesting continued forward movement.
+4. **Frame 4**: The robot's legs are fully extended, and its body is straight, indicating that it has reached its destination and is stationary.
+
+Overall, the robot is moving forward and then coming to a stop.
+[VLM Debug] Step 144 | raw=0.5776 | shaped=10.4687 | reward_mean=0.0326
+[VLM Description] The robot appears to be in a static pose, lying on its back on a checkered surface. Here is a description of the robot's position across the frames:
+
+1. **Frame 1**: The robot is lying on its back with its legs extended forward.
+2. **Frame 2**: The robot's legs are slightly bent, and its body is more upright.
+3. **Frame 3**: The robot's legs are fully extended, and its body is more upright compared to the previous frame.
+4. **Frame 4**: The robot's legs are still fully extended, and its body is more upright than in the previous frames.
+
+The robot's position and posture suggest it is in a resting or stationary state, possibly waiting for an event or observing its surroundings.
+[VLM Debug] Step 160 | raw=0.0792 | shaped=-16.1136 | reward_mean=-0.0205
+[VLM Description] The robot appears to be in a dynamic pose, likely in a physics simulation. Here is a description of its movements across the frames:
+
+1. **Frame 1**: The robot is in a static position, with its legs extended and arms resting on the ground.
+2. **Frame 2**: The robot's arms are now raised, with the hands touching the ground, and the legs are still extended.
+3. **Frame 3**: The robot's arms are raised higher, and the legs are still extended, indicating a possible movement or transition.
+4. **Frame 4**: The robot's arms are raised even higher, and the legs are still extended, suggesting a continuous motion or a transition to a new pose.
+
+Overall, the robot seems to be in a state of motion, with its arms and legs moving in a coordinated manner.
+[VLM Debug] Step 176 | raw=0.3486 | shaped=8.9417 | reward_mean=0.0058
+global_step=187, episodic_return=274.476
+[VLM Description] The robot appears to be in a state of motion, likely moving or changing direction. Here is a description of the robot's movement across the frames:
+
+1. **Frame 1**: The robot is positioned on the checkered floor, facing forward.
+2. **Frame 2**: The robot has turned slightly to the right, with its front legs extended outward.
+3. **Frame 3**: The robot has continued to turn to the right, with its front legs now more extended and its body slightly angled.
+4. **Frame 4**: The robot has turned further to the right, with its front legs still extended and its body angled more to the right.
+
+The robot's movement suggests it is either moving forward or changing direction, as indicated by the changes in its orientation and the position of its front legs.
+[VLM Debug] Reset raw score: 0.6655
+[VLM Description] The robot appears to be in a state of motion, likely crawling or moving across a checkered surface. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is positioned on the checkered surface, with its legs extended and its body slightly bent.
+2. **Frame 2**: The robot's legs are more extended, and its body is more curved, indicating a forward motion.
+3. **Frame 3**: The robot's legs are still extended, and its body is more curved, suggesting continued forward movement.
+4. **Frame 4**: The robot's legs are fully extended, and its body is straight, indicating that it has reached its destination and is stationary.
+
+Overall, the robot is moving forward and then coming to a stop.
+[VLM Debug] Step 16 | raw=0.5815 | shaped=-2.9053 | reward_mean=-0.0017
+[VLM Description] The robot appears to be in a state of motion, likely crawling or moving across a checkered surface. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is positioned on the checkered surface, with its legs extended and its body slightly bent.
+2. **Frame 2**: The robot's legs are more extended, and its body is more curved, indicating a forward motion.
+3. **Frame 3**: The robot's legs are still extended, and its body is more curved, suggesting continued forward movement.
+4. **Frame 4**: The robot's legs are fully extended, and its body is straightened, indicating that it has reached its destination and is stationary.
+
+Overall, the robot is moving forward and then coming to a stop.
+[VLM Debug] Step 32 | raw=0.5469 | shaped=-1.1184 | reward_mean=-0.0042
+[VLM Description] The robot appears to be in a state of motion, likely crawling or moving along a surface. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is positioned on the ground, with its legs extended and its body slightly bent.
+2. **Frame 2**: The robot's legs are still extended, but its body is more bent, indicating a slight forward movement.
+3. **Frame 3**: The robot's legs are still extended, and its body is more bent, suggesting a continued forward motion.
+4. **Frame 4**: The robot's legs are still extended, and its body is more bent, indicating a steady forward movement. The robot's position on the ground appears to be slightly shifted, suggesting it is making progress.
+
+Overall, the robot is moving forward, with its legs and body maintaining a bent position to facilitate movement.
+[VLM Debug] Step 48 | raw=0.5776 | shaped=1.2365 | reward_mean=-0.0017
+[VLM Description] The robot appears to be in a state of motion, likely crawling or moving along a surface. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is positioned on the ground, with its legs extended and its body slightly bent.
+2. **Frame 2**: The robot's legs are still extended, but its body is more bent, indicating a slight forward movement.
+3. **Frame 3**: The robot's legs are still extended, and its body is more bent, suggesting a continued forward motion.
+4. **Frame 4**: The robot's legs are still extended, and its body is more bent, indicating a steady forward movement. The robot's position on the ground appears to be slightly shifted, suggesting it is making progress.
+
+Overall, the robot is moving forward, with its legs and body maintaining a bent position to facilitate movement.
+[VLM Debug] Step 64 | raw=0.5889 | shaped=0.4760 | reward_mean=-0.0008
+[VLM Description] The robot appears to be in a dynamic pose, likely in a physics simulation. Here is a description of its movements across the frames:
+
+1. **Frame 1**: The robot is in a standing position with its arms extended forward and its legs spread apart.
+2. **Frame 2**: The robot's arms are bent at the elbows, and its legs are positioned in a way that suggests it is in the middle of a movement, possibly bending forward.
+3. **Frame 3**: The robot's arms are fully extended, and its legs are bent at the knees, indicating a more dynamic pose, possibly in the process of bending forward.
+4. **Frame 4**: The robot's arms are still extended, and its legs are bent at the knees, maintaining the dynamic pose from the previous frame.
+
+Overall, the robot is in a state of motion, likely bending forward, as indicated by the bent arms and legs.
+[VLM Debug] Step 80 | raw=0.1848 | shaped=-14.2999 | reward_mean=-0.0260
+[VLM Description] The robot appears to be in a state of motion, likely crawling or moving across a checkered surface. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is positioned on the checkered surface, with its legs extended and its body slightly bent.
+2. **Frame 2**: The robot's legs are more extended, and its body is slightly more bent, indicating a forward motion.
+3. **Frame 3**: The robot's legs are fully extended, and its body is more upright, suggesting it is moving forward.
+4. **Frame 4**: The robot's legs are still fully extended, and its body is more upright, indicating it is continuing to move forward.
+
+Overall, the robot is moving forward and stretching its legs, suggesting it is crawling or moving across the checkered surface.
+[VLM Debug] Step 96 | raw=0.5581 | shaped=13.7612 | reward_mean=-0.0026
+[VLM Description] The robot appears to be in a static pose, lying on its back on a checkered surface. Here is a description of the robot's position across the frames:
+
+1. **Frame 1**: The robot is lying on its back with its legs extended forward.
+2. **Frame 2**: The robot's legs are slightly bent, and its arms are extended forward.
+3. **Frame 3**: The robot's legs are straightened, and its arms are extended forward.
+4. **Frame 4**: The robot's legs are bent, and its arms are extended forward.
+
+The robot's position changes from lying on its back to straightening its legs and arms, indicating a possible movement or transition in the simulation.
+[VLM Debug] Step 112 | raw=0.2815 | shaped=-9.4897 | reward_mean=-0.0178
+[VLM Description] The robot appears to be performing a series of movements, likely a yoga pose, on a checkered floor. Here is a description of the sequence of frames:
+
+1. **Initial Position**: The robot is standing upright with its arms extended forward and its legs straight.
+2. **First Frame**: The robot bends forward slightly, with its arms still extended forward and its legs straight.
+3. **Second Frame**: The robot bends further forward, with its arms still extended forward and its legs straight.
+4. **Third Frame**: The robot bends even further forward, with its arms still extended forward and its legs straight.
+5. **Fourth Frame**: The robot bends the most, with its arms still extended forward and its legs straight, almost touching the floor.
+
+The robot's body is in a curved position, and its arms and legs are in a straight position, indicating a yoga pose. The checkered floor provides a contrasting background, emphasizing the robot's movements.
+[VLM Debug] Step 128 | raw=0.0781 | shaped=-6.5457 | reward_mean=-0.0276
+[VLM Description] The robot appears to be in a static pose, with its arms and legs extended outwards. Here is a description of the robot's movements across the frames:
+
+1. **Frame 1**: The robot is in a similar pose to the previous frame, with its arms and legs extended outwards.
+2. **Frame 2**: The robot's arms and legs appear to be slightly more extended compared to the previous frame.
+3. **Frame 3**: The robot's arms and legs are fully extended, with the arms reaching towards the ground and the legs spread apart.
+4. **Frame 4**: The robot's arms and legs are still fully extended, but there is a slight change in the position of the arms, as if they are moving slightly forward or backward.
+
+Overall, the robot seems to be in a stationary pose with its arms and legs extended, and there are no significant changes in its posture or movement between the frames.
+[VLM Debug] Step 144 | raw=0.3311 | shaped=9.9102 | reward_mean=-0.0135
+[VLM Description] The robot appears to be in a static pose, lying on its back on a checkered surface. The robot's limbs are extended outward, and its head is positioned centrally. There are no visible actions or movements occurring in these frames. The robot's limbs are spread out in a way that suggests it might be in a resting or stationary position.
+[VLM Debug] Step 160 | raw=0.0256 | shaped=-10.3097 | reward_mean=-0.0274
+global_step=362, episodic_return=-298.248
+[VLM Description] The robot appears to be in a static pose, with its arms extended and resting on a flat surface. The arms are positioned in a way that suggests they are either resting on the surface or about to move. The robot's orientation and the position of its arms suggest it might be in a state of rest or preparation for movement.
+[VLM Debug] Reset raw score: 0.0534
+[VLM Description] The robot appears to be in a state of motion, likely crawling or moving across a checkered surface. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is positioned on the checkered surface, with its legs extended and its body slightly bent forward.
+2. **Frame 2**: The robot's legs are still extended, but its body is slightly more bent forward, indicating a forward motion.
+3. **Frame 3**: The robot's legs are still extended, and its body is further bent forward, suggesting a more pronounced forward motion.
+4. **Frame 4**: The robot's legs are still extended, and its body is even more bent forward, indicating a continued forward motion.
+
+Overall, the robot is moving forward on the checkered surface, with its legs and body maintaining a forward trajectory.
+[VLM Debug] Step 16 | raw=0.5469 | shaped=17.4478 | reward_mean=-0.0038
+[VLM Description] The robot appears to be in a static pose, with its legs extended and its body positioned in a way that suggests it is either resting or preparing to move. The robot's legs are spread out, and its body is oriented in a way that it is facing forward. The background is a checkered pattern, which could be a floor or a surface the robot is on. The overall posture of the robot suggests it is in a neutral or resting position.
+[VLM Debug] Step 32 | raw=0.0953 | shaped=-14.6038 | reward_mean=-0.0232
+[VLM Description] The robot appears to be in a state of motion, likely crawling or moving across a checkered surface. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is positioned on its back, with its legs extended forward and its arms extended backward. The robot's body is slightly bent, indicating movement.
+
+2. **Frame 2**: The robot's legs are still extended forward, but its arms are now bent at the elbows, suggesting a more dynamic posture. The robot's body is slightly more bent, indicating continued movement.
+
+3. **Frame 3**: The robot's legs are still extended forward, and its arms are bent at the elbows. The robot's body is more bent, indicating a continued forward motion. The arms appear to be in a more relaxed position compared to the previous frame.
+
+4. **Frame 4**: The robot's legs are still extended forward, and its arms are bent at the elbows. The robot's body is more bent, indicating a continued forward motion. The arms appear to be in a more relaxed position compared to the previous frame.
+
+Overall, the robot is moving forward, with its legs and arms in a dynamic posture, suggesting it is crawling or moving across the checkered surface.
+[VLM Debug] Step 48 | raw=0.3923 | shaped=10.4323 | reward_mean=-0.0099
+[VLM Description] The robot appears to be in a static pose, with its legs extended and arms resting on the ground. Here is a description of the robot's movements across the frames:
+
+1. **Frame 1**: The robot is in a similar pose to the previous frame, with its legs extended and arms resting on the ground.
+2. **Frame 2**: The robot's legs are slightly bent, indicating a possible movement or adjustment in its posture.
+3. **Frame 3**: The robot's legs are fully extended, and its arms are also fully extended, suggesting a more dynamic pose.
+4. **Frame 4**: The robot's legs are slightly bent again, indicating a possible movement or adjustment in its posture.
+
+Overall, the robot seems to be in a state of rest or preparation for movement, with its limbs in various positions.
+[VLM Debug] Step 64 | raw=0.1779 | shaped=-6.7499 | reward_mean=-0.0181
+[VLM Description] The robot appears to be in a dynamic pose, likely in a physics simulation. Here is a description of its movements across the frames:
+
+1. **Frame 1**: The robot is in a standing position with its arms extended forward and its legs spread apart.
+2. **Frame 2**: The robot's arms are bent at the elbows, and its legs are slightly bent at the knees. The robot's body is more curved, indicating a change in posture.
+3. **Frame 3**: The robot's arms are fully extended, and its legs are straight. The body is more upright compared to the previous frame.
+4. **Frame 4**: The robot's arms are bent at the elbows, and its legs are slightly bent at the knees. The body is more curved, suggesting a continuation of the dynamic pose.
+
+Overall, the robot's movements suggest a continuous change in posture, possibly indicating a movement or a reaction to an external stimulus.
+[VLM Debug] Step 80 | raw=0.2751 | shaped=3.8754 | reward_mean=-0.0136
+global_step=447, episodic_return=123.799
+[VLM Description] The robot appears to be in a stationary position on a checkered surface. In the first frame, the robot is positioned with its arms extended horizontally. In the second frame, the arms are slightly bent, indicating a possible movement or adjustment. In the third frame, the arms are fully extended, suggesting a more dynamic position. In the fourth frame, the arms are again bent, indicating a possible repositioning or adjustment. The robot's orientation and position suggest it is in a state of rest or preparation for movement.
+[VLM Debug] Reset raw score: 0.0953
+[VLM Description] The robot appears to be in a static pose, with its arms extended and legs bent at the knees. The robot's arms are positioned in a way that suggests it might be in a resting or stationary position. The legs are also bent, indicating that the robot is not in motion. The overall posture suggests that the robot is either waiting for an event or is in a state of rest.
+[VLM Debug] Step 16 | raw=0.0357 | shaped=-1.5777 | reward_mean=-0.0153
+[VLM Description] The robot appears to be in a dynamic pose, possibly in a physics simulation. Here is a description of its movements across the frames:
+
+1. **Frame 1**: The robot is in a standing position with its arms extended forward and its legs bent at the knees.
+2. **Frame 2**: The robot's arms are bent even more, and its legs are also bent, indicating a more dynamic pose.
+3. **Frame 3**: The robot's arms and legs are still bent, but the body appears to be slightly more extended compared to the previous frame.
+4. **Frame 4**: The robot's arms and legs are fully extended, and its body is more upright compared to the previous frames.
+
+Overall, the robot seems to be in a state of motion, possibly moving or changing its position.
+[VLM Debug] Step 32 | raw=0.2974 | shaped=9.5174 | reward_mean=-0.0054
+[VLM Description] The robot appears to be in a static pose, with its arms and legs extended outwards. Here is a description of the robot's movements across the frames:
+
+1. **Frame 1**: The robot is in a similar pose to the previous frame, with its arms and legs extended outwards.
+2. **Frame 2**: The robot's arms and legs appear to be slightly more extended compared to the previous frame.
+3. **Frame 3**: The robot's arms and legs are fully extended, with the arms reaching towards the center of the frame and the legs spread out.
+4. **Frame 4**: The robot's arms and legs are still fully extended, with no noticeable changes in position or movement.
+
+Overall, the robot seems to be in a stationary pose with its arms and legs extended outwards.
+[VLM Debug] Step 48 | raw=0.2878 | shaped=-0.1430 | reward_mean=-0.0056
+[VLM Description] The robot appears to be in a state of motion, likely crawling or moving across a checkered surface. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is positioned on its back, with its legs extended forward and its body slightly bent.
+2. **Frame 2**: The robot's legs are still extended forward, but its body is slightly more bent, indicating a forward motion.
+3. **Frame 3**: The robot's legs are still extended forward, and its body is more bent, suggesting continued forward movement.
+4. **Frame 4**: The robot's legs are still extended forward, and its body is more bent, indicating that it is moving forward at a steady pace.
+
+Overall, the robot is moving forward and bending its body, suggesting it is crawling or moving across the checkered surface.
+[VLM Debug] Step 64 | raw=0.3557 | shaped=2.6154 | reward_mean=-0.0031
+[VLM Description] The robot appears to be in a state of motion, likely crawling or moving across a checkered surface. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is positioned on the checkered surface, with its legs extended and its body slightly bent forward.
+2. **Frame 2**: The robot's legs are still extended, but its body is more bent forward, indicating a forward motion.
+3. **Frame 3**: The robot's legs are still extended, and its body is further bent forward, suggesting a continued forward motion.
+4. **Frame 4**: The robot's legs are still extended, and its body is still bent forward, indicating that it is moving forward at a steady pace.
+
+Overall, the robot is moving forward and bending its body forward, consistent with crawling or crawling-like movements.
+[VLM Debug] Step 80 | raw=0.3486 | shaped=-0.1432 | reward_mean=-0.0033
+[VLM Description] The robot appears to be in a static pose, lying on its back on a checkered surface. The robot's limbs are extended outward, and its head is positioned slightly above the center of the frame. The overall posture suggests that the robot is not in motion and is likely in a resting or stationary position.
+[VLM Debug] Step 96 | raw=0.0284 | shaped=-11.4317 | reward_mean=-0.0132
+[VLM Description] The robot appears to be in a state of motion, likely crawling or moving across a checkered surface. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is lying flat on its back, with its legs extended and arms outstretched. The robot's body is slightly curved, indicating movement.
+
+2. **Frame 2**: The robot's legs are still extended, but its arms are now raised and bent at the elbows. The robot's body is slightly more curved, suggesting a forward motion.
+
+3. **Frame 3**: The robot's arms are fully extended, and its legs are still extended. The robot's body is more curved, indicating a continued forward motion.
+
+4. **Frame 4**: The robot's arms are still fully extended, and its legs are still extended. The robot's body is more curved, indicating a continued forward motion.
+
+Overall, the robot is moving forward, with its arms and legs extended, and its body curved in a way that suggests it is crawling or moving across the checkered surface.
+[VLM Debug] Step 112 | raw=0.4609 | shaped=15.6981 | reward_mean=0.0003
+[VLM Description] The robot appears to be in a state of motion, likely crawling or moving across a checkered surface. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is positioned on the checkered surface, with its legs extended and its body slightly bent.
+2. **Frame 2**: The robot's legs are still extended, but its body appears to be slightly more bent, indicating movement.
+3. **Frame 3**: The robot's legs are still extended, and its body is more bent, suggesting continued movement.
+4. **Frame 4**: The robot's legs are still extended, and its body is more bent, indicating that it is moving further across the surface.
+
+Overall, the robot is moving across the checkered surface, with its legs and body bending and extending in a coordinated manner.
+[VLM Debug] Step 128 | raw=0.4148 | shaped=-1.6629 | reward_mean=-0.0010
+[VLM Description] The robot appears to be in a state of motion, likely crawling or moving across a checkered surface. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is positioned on the checkered surface, with its legs extended and its body slightly bent.
+2. **Frame 2**: The robot's legs are more extended, and its body is slightly more bent, indicating a forward motion.
+3. **Frame 3**: The robot's legs are fully extended, and its body is more upright, suggesting it is moving forward.
+4. **Frame 4**: The robot's legs are still fully extended, and its body is more upright, indicating it is continuing to move forward.
+
+Overall, the robot is moving forward and extending its legs, suggesting it is crawling or moving across the checkered surface.
+[VLM Debug] Step 144 | raw=0.5620 | shaped=5.3621 | reward_mean=0.0032
+[VLM Description] The robot appears to be in a static pose, with its legs extended and its body positioned in a way that suggests it is ready to move or is in a resting position. The robot's limbs are spread out, and its head is positioned slightly above the center of its body. There are no visible actions or movements happening in these frames.
+[VLM Debug] Step 160 | raw=0.1208 | shaped=-15.7281 | reward_mean=-0.0091
+[VLM Description] The robot appears to be in a static pose, with its legs extended and its body positioned in a way that suggests it is either resting or preparing to move. Here is a description of the robot's pose across the frames:
+
+1. **Frame 1**: The robot is in a similar pose to the previous frame, with its legs extended and its body positioned in a way that suggests it is ready to move or is in a resting position.
+2. **Frame 2**: The robot's legs are slightly bent, indicating a possible movement or transition to a different pose.
+3. **Frame 3**: The robot's legs are fully extended, and its body is in a more upright position, suggesting that it has moved from a resting pose to a more active or prepared state.
+4. **Frame 4**: The robot's legs are still extended, and its body is in a similar upright position, indicating that it has maintained its pose and is ready to continue moving or is in a stationary position.
+
+Overall, the robot appears to be in a state of readiness, possibly preparing to move or in a stationary position.
+[VLM Debug] Step 176 | raw=0.2974 | shaped=6.6257 | reward_mean=-0.0041
+[VLM Description] The robot appears to be in a state of motion, likely crawling or moving across a checkered surface. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is positioned on the checkered surface, with its legs extended and its body slightly bent.
+2. **Frame 2**: The robot's legs are more extended, and its body is more curved, indicating a forward motion.
+3. **Frame 3**: The robot's legs are still extended, and its body is more curved, suggesting continued forward movement.
+4. **Frame 4**: The robot's legs are fully extended, and its body is straight, indicating that it has reached its destination and is stationary.
+
+Overall, the robot is moving forward and then coming to a stop.
+[VLM Debug] Step 192 | raw=0.5659 | shaped=9.7420 | reward_mean=0.0031
+global_step=652, episodic_return=272.761
+[VLM Description] The robot appears to be in a static position, with its arms extended and resting on a flat surface. The arms are positioned in a way that suggests they are either resting on the surface or about to move. The robot's orientation and the position of its arms suggest it might be in a resting or stationary state.
+[VLM Debug] Reset raw score: 0.0357
+[VLM Description] The robot appears to be in a state of motion, likely crawling or moving across a checkered surface. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is positioned on the checkered surface, with its legs extended and its body slightly bent.
+2. **Frame 2**: The robot's legs are more extended, and its body is more curved, indicating a forward motion.
+3. **Frame 3**: The robot's legs are still extended, and its body is more curved, suggesting continued forward motion.
+4. **Frame 4**: The robot's legs are fully extended, and its body is straight, indicating that it has reached its destination and is stationary.
+
+Overall, the robot is moving forward and then coming to a stop.
+[VLM Debug] Step 16 | raw=0.5312 | shaped=17.1360 | reward_mean=0.0157
+[VLM Description] The robot appears to be in a state of motion, likely crawling or moving across a checkered surface. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is positioned on the checkered surface, with its legs extended and its body slightly bent.
+2. **Frame 2**: The robot's legs are more extended, and its body is more curved, indicating a forward motion.
+3. **Frame 3**: The robot's legs are still extended, and its body is more curved, suggesting continued forward movement.
+4. **Frame 4**: The robot's legs are fully extended, and its body is straight, indicating that it has reached its destination and is stationary.
+
+Overall, the robot is moving forward and then coming to a stop.
+[VLM Debug] Step 32 | raw=0.5391 | shaped=-0.2777 | reward_mean=0.0155
+[VLM Description] The robot appears to be in a dynamic pose, likely in the process of crawling or moving across a checkered surface. Here is a description of the robot's movements across the frames:
+
+1. **Frame 1**: The robot is positioned on its back, with its legs extended forward and its body slightly bent.
+2. **Frame 2**: The robot's legs are still extended forward, but its body is slightly more bent, indicating a forward motion.
+3. **Frame 3**: The robot's legs are still extended forward, and its body is more bent, suggesting continued forward movement.
+4. **Frame 4**: The robot's legs are still extended forward, and its body is more bent, indicating that it is in the final stage of its movement, possibly about to stop or reverse direction.
+
+Overall, the robot is moving forward and bending its body, indicating a continuous motion across the checkered surface.
+[VLM Debug] Step 48 | raw=0.4341 | shaped=-4.2933 | reward_mean=0.0126
+[VLM Description] The robot appears to be in a static pose, with its legs extended and its body positioned in a way that suggests it is ready to move or is in a resting position. The robot's legs are spread out, and its body is oriented in a way that it is facing forward. There are no visible actions or movements happening in these frames.
+[VLM Debug] Step 64 | raw=0.1919 | shaped=-9.1004 | reward_mean=0.0065
+[VLM Description] The robot appears to be in a state of motion, likely crawling or moving across a checkered surface. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is positioned on the checkered surface, with its legs extended and its body slightly bent.
+2. **Frame 2**: The robot's legs are more extended, and its body is slightly more bent, indicating a forward motion.
+3. **Frame 3**: The robot's legs are fully extended, and its body is more upright, suggesting it is moving forward.
+4. **Frame 4**: The robot's legs are still fully extended, and its body is more upright, indicating it is continuing to move forward.
+
+Overall, the robot is moving forward and stretching its legs, suggesting it is crawling or moving across the checkered surface.
+[VLM Debug] Step 80 | raw=0.5581 | shaped=12.7557 | reward_mean=0.0149
+[VLM Description] The robot appears to be in a state of motion, likely crawling or moving across a checkered surface. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is positioned on the checkered surface, with its legs extended and its body slightly bent.
+2. **Frame 2**: The robot's legs are more extended, and its body is slightly more bent, indicating a forward motion.
+3. **Frame 3**: The robot's legs are fully extended, and its body is more upright, suggesting it is moving forward.
+4. **Frame 4**: The robot's legs are still fully extended, and its body is more upright, indicating it is continuing to move forward.
+
+Overall, the robot is moving forward and stretching its legs, suggesting it is crawling or moving across the checkered surface.
+[VLM Debug] Step 96 | raw=0.5352 | shaped=-1.3565 | reward_mean=0.0140
+[VLM Description] The robot appears to be in a state of motion, likely crawling or moving across a checkered surface. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is positioned on the checkered surface, with its legs extended and its body slightly bent.
+2. **Frame 2**: The robot's legs are more extended, and its body is more curved, indicating a forward motion.
+3. **Frame 3**: The robot's legs are still extended, and its body is more curved, suggesting continued forward movement.
+4. **Frame 4**: The robot's legs are fully extended, and its body is straight, indicating that it has reached its destination and is stationary.
+
+Overall, the robot is moving forward and then coming to a stop.
+[VLM Debug] Step 112 | raw=0.5547 | shaped=0.2010 | reward_mean=0.0141
+[VLM Description] The robot appears to be in a dynamic pose, likely in a physics simulation. Here is a description of its movements across the frames:
+
+1. **Frame 1**: The robot is in a stationary position, with its legs extended and its body slightly bent.
+2. **Frame 2**: The robot's legs are slightly bent, and its body is more extended, indicating a possible movement or transition.
+3. **Frame 3**: The robot's legs are fully extended, and its body is more upright, suggesting a change in posture or a preparatory stance for movement.
+4. **Frame 4**: The robot's legs are still fully extended, and its body is more upright, indicating a continuation of the movement or a stable position.
+
+Overall, the robot seems to be in a state of motion, possibly preparing to move or maintaining a stable position.
+[VLM Debug] Step 128 | raw=0.3667 | shaped=-7.3773 | reward_mean=0.0097
+[VLM Description] The robot appears to be in a state of motion, likely crawling or moving across a checkered surface. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is positioned on the checkered surface, with its legs extended and its body slightly bent.
+2. **Frame 2**: The robot's legs are still extended, but its body is more bent, indicating a slight forward movement.
+3. **Frame 3**: The robot's legs are still extended, and its body is more bent, suggesting a continued forward motion.
+4. **Frame 4**: The robot's legs are still extended, and its body is more bent, indicating a steady forward movement. The robot's position on the checkered surface appears to be consistent with the previous frames.
+
+Overall, the robot seems to be moving forward and bending its body, likely crawling or moving across the checkered surface.
+[VLM Debug] Step 144 | raw=0.3523 | shaped=-0.8906 | reward_mean=0.0092
+[VLM Description] The robot appears to be in a state of motion, likely crawling or moving across a checkered surface. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is positioned on the checkered surface, with its legs extended and its body slightly bent.
+2. **Frame 2**: The robot's legs are more extended, and its body is more curved, indicating a forward motion.
+3. **Frame 3**: The robot's legs are still extended, and its body is more curved, suggesting continued forward motion.
+4. **Frame 4**: The robot's legs are fully extended, and its body is straight, indicating that it has reached its destination and is stationary.
+
+Overall, the robot is moving forward and then coming to a stop.
+[VLM Debug] Step 160 | raw=0.5620 | shaped=7.4384 | reward_mean=0.0134
+[VLM Description] The robot appears to be in a state of motion, likely crawling or moving across a checkered surface. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is lying on its back on the checkered surface, with its legs extended and its body slightly curved.
+2. **Frame 2**: The robot's legs are still extended, but its body is slightly more curved, indicating a slight forward motion.
+3. **Frame 3**: The robot's legs are still extended, and its body is more curved, suggesting a continued forward motion.
+4. **Frame 4**: The robot's legs are still extended, and its body is more curved, indicating a steady forward motion. The robot's position is slightly more forward compared to the previous frame.
+
+Overall, the robot is moving forward on the checkered surface, with its legs and body maintaining a consistent curve throughout the frames.
+[VLM Debug] Step 176 | raw=0.5508 | shaped=-0.9231 | reward_mean=0.0129
+global_step=836, episodic_return=220.378
+[VLM Description] The robot appears to be in a static pose, with its arms extended outwards. Here is a description of the robot's movements across the frames:
+
+1. **Frame 1**: The robot is positioned with its arms extended outwards, but it does not appear to be in motion.
+2. **Frame 2**: The robot's arms are still extended outwards, but there is a slight change in the position of the arms. The arms may be moving slightly, but the overall posture remains the same.
+3. **Frame 3**: The robot's arms are still extended outwards, but there is a noticeable change in the position of the arms. The arms may be moving further apart or closer together.
+4. **Frame 4**: The robot's arms are still extended outwards, but there is a further change in the position of the arms. The arms may be moving more significantly, possibly in a way that suggests movement or action.
+
+Overall, the robot appears to be in a static pose with arms extended outwards, and there are subtle changes in the position of the arms across the frames.
+[VLM Debug] Reset raw score: 0.1366
+[VLM Description] The robot appears to be in a static pose, with its legs extended and its body positioned in a way that suggests it is either resting or preparing to move. The robot's limbs are spread out, and its head is positioned slightly above the center of its body. The overall posture suggests that the robot is not actively engaged in any specific action, such as walking or climbing. The background and environment remain consistent throughout the frames, indicating that the robot is in a controlled environment, likely a simulation or a controlled experiment.
+[VLM Debug] Step 16 | raw=0.0981 | shaped=-1.9469 | reward_mean=0.0119
+[VLM Description] The robot appears to be in a state of motion, likely moving or changing position. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is positioned on the ground, with its legs extended and its body slightly bent.
+2. **Frame 2**: The robot's legs are still extended, but its body is more bent, indicating a possible change in posture or movement.
+3. **Frame 3**: The robot's legs are still extended, and its body is more bent, suggesting a continued motion or change in direction.
+4. **Frame 4**: The robot's legs are still extended, and its body is more bent, indicating a consistent motion or movement across the frames.
+
+Overall, the robot seems to be in a state of motion, with its legs and body changing positions and angles.
+[VLM Debug] Step 32 | raw=0.3701 | shaped=9.8595 | reward_mean=0.0170
+global_step=884, episodic_return=126.603
+[VLM Description] The robot appears to be in a state of motion, likely falling or rolling. Here is a description of the robot's movement across the frames:
+
+1. **Frame 1**: The robot is lying on its back on a checkered surface. The robot's arms and legs are extended, and the body is slightly tilted.
+
+2. **Frame 2**: The robot's arms and legs are still extended, but the body is now more upright. The arms are slightly bent, and the legs are straight.
+
+3. **Frame 3**: The robot's arms and legs are still extended, but the body is now more upright and the arms are slightly bent. The legs are straight.
+
+4. **Frame 4**: The robot's arms and legs are still extended, but the body is now more upright and the arms are slightly bent. The legs are straight.
+
+Overall, the robot seems to be rolling or falling on its back, with its arms and legs extended and the body tilted. The checkered surface provides a stable base for the robot's movement.
+[VLM Debug] Reset raw score: 0.1082
+[VLM Description] The robot appears to be in a state of motion, likely crawling or moving across a checkered surface. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is positioned on the checkered surface, with its legs extended and its body slightly bent.
+2. **Frame 2**: The robot's legs are more extended, and its body is slightly more bent, indicating a forward motion.
+3. **Frame 3**: The robot's legs are fully extended, and its body is more upright, suggesting it is moving forward.
+4. **Frame 4**: The robot's legs are still fully extended, and its body is more upright, indicating it is continuing to move forward.
+
+Overall, the robot is moving forward and stretching its legs, suggesting it is crawling or moving across the checkered surface.
+[VLM Debug] Step 16 | raw=0.5776 | shaped=16.8323 | reward_mean=0.0257
+[VLM Description] The robot appears to be in a dynamic pose, likely in a physics simulation. Here is a description of its movements across the frames:
+
+1. **Frame 1**: The robot is in a static position, with its arms and legs extended outward.
+2. **Frame 2**: The robot's arms and legs are slightly bent, indicating a possible movement or transition.
+3. **Frame 3**: The robot's arms and legs are more bent, suggesting a more dynamic pose, possibly in the process of moving or changing direction.
+4. **Frame 4**: The robot's arms and legs are fully extended, indicating a final pose or a completed movement.
+
+Overall, the robot seems to be in a state of motion, transitioning from a static position to a more dynamic pose.
+[VLM Debug] Step 32 | raw=0.2847 | shaped=-11.8098 | reward_mean=0.0196
+[VLM Description] The robot appears to be in a dynamic pose, likely in a physics simulation. Here is a description of its movements across the frames:
+
+1. **Frame 1**: The robot is in a stationary position, with its legs extended and its body slightly bent.
+2. **Frame 2**: The robot's legs are slightly bent, and its body is more curved, indicating a possible movement or transition.
+3. **Frame 3**: The robot's legs are fully extended, and its body is more curved, suggesting a more dynamic pose.
+4. **Frame 4**: The robot's legs are still extended, and its body is more curved, indicating a continuation of the dynamic pose.
+
+Overall, the robot seems to be in a state of motion, with its legs and body moving in a coordinated manner.
+[VLM Debug] Step 48 | raw=0.3381 | shaped=1.2655 | reward_mean=0.0203
+[VLM Description] The robot appears to be in a static pose, with its arms and legs extended and resting on a flat surface. The robot's arms are positioned in a way that suggests it might be in a resting or stationary position. The legs are also extended, indicating that the robot is not in motion. The overall posture suggests that the robot is either waiting for an event or is in a state of rest.
+[VLM Debug] Step 64 | raw=0.0373 | shaped=-11.9680 | reward_mean=0.0144
+[VLM Description] The robot appears to be in a dynamic pose, likely in a physics simulation. Here is a description of its movements across the frames:
+
+1. **Frame 1**: The robot is in a stationary position, with its legs extended and arms resting on the ground.
+2. **Frame 2**: The robot's legs are slightly bent, and its arms are raised, suggesting a preparatory or transitional pose.
+3. **Frame 3**: The robot's legs are fully extended, and its arms are raised, indicating a dynamic movement or action.
+4. **Frame 4**: The robot's legs are bent, and its arms are lowered, suggesting a return to a stationary position or a pause in its movement.
+
+Overall, the robot seems to be in a state of motion, transitioning between different poses.
+[VLM Debug] Step 80 | raw=0.2942 | shaped=9.0528 | reward_mean=0.0188
+[VLM Description] The robot appears to be in a state of motion, likely crawling or moving across a checkered surface. Here is a description of the robot's actions across the frames:
+
+1. **Frame 1**: The robot is positioned on the checkered surface, with its legs extended and its body slightly bent.
+2. **Frame 2**: The robot's legs are more extended, and its body is slightly curved, indicating a forward motion.
+3. **Frame 3**: The robot's legs are fully extended, and its body is more curved, suggesting a more dynamic movement.
+4. **Frame 4**: The robot's legs are still extended, and its body is more curved, indicating a continued forward motion.
+
+Overall, the robot is moving forward and bending its body, suggesting it is crawling or moving across the checkered surface.
+[VLM Debug] Step 96 | raw=0.3960 | shaped=3.1267 | reward_mean=0.0202
+global_step=994, episodic_return=97.738
+[VLM Description] The robot appears to be in a state of motion, likely moving or rotating. Here is a description of the robot's movement across the frames:
+
+1. **Frame 1**: The robot is positioned in a static state, with all four limbs extended and the body facing forward.
+2. **Frame 2**: The robot begins to rotate, with the limbs moving in a circular motion around the central body.
+3. **Frame 3**: The rotation continues, with the limbs moving in a more complex pattern, possibly indicating a change in direction or speed.
+4. **Frame 4**: The robot is still in motion, with the limbs continuing to rotate and move in a coordinated manner.
+
+Overall, the robot is moving in a circular or rotational motion, with the limbs moving in a coordinated pattern.
+[VLM Debug] Reset raw score: 0.3557
