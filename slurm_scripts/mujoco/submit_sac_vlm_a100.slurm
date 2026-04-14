@@ -1,5 +1,5 @@
 #!/bin/bash
-#SBATCH --job-name=sac_mujoco
+#SBATCH --job-name=sac_mujoco_vlm
 #SBATCH --output=/scratch/gilbreth/yang2739/logs/sac_mujoco_%j.out
 #SBATCH --error=/scratch/gilbreth/yang2739/logs/sac_mujoco_%j.err
 #SBATCH --account=ai-forge
@@ -33,7 +33,7 @@ CMD="srun uv run python experiments/mujoco/sac_vlm.py \
   --vlm-n-frames 8 \
   --vlm-frame-every 2 \
   --vlm-clip-every 16 \
-  --capture-video
+  --capture-video \
 "
 
 if [ "$1" == "clip" ]; then
@@ -47,8 +47,7 @@ else
   exit 1
 fi
 
-echo "GPU Info: $(nvidia-smi --query-gpu=name --format=csv,noheader)"
-echo "Starting SAC in MuJoCo environment training..."
-echo "Starting SAC + $1 in MuJoCo environment training..."
 echo "Command: $CMD"
+echo "Starting batch script:environment=mujoco, algorithm=sac, model=$1, \
+  device=$(nvidia-smi --query-gpu=name --format=csv,noheader), job_id=$SLURM_JOB_ID"
 eval "$CMD"

@@ -2,7 +2,7 @@ import collections
 import gymnasium as gym
 import torch
 import numpy as np
-import torch.nn.functional as F
+from PIL import Image
 from transformers import XCLIPModel, XCLIPProcessor
 
 
@@ -39,7 +39,7 @@ class VLMRewardWrapper(gym.Wrapper):
             text_inputs = self.processor(text=[text_goal], return_tensors="pt", padding=True)
             text_inputs = {k: v.to(device) for k, v in text_inputs.items()}
             text_feats = self.model.get_text_features(**text_inputs)
-            self.text_features = (text_feats / text_feats.norm(p=2, dim=-1, keepdim=True)).half()
+            self.text_features = text_feats / text_feats.norm(p=2, dim=-1, keepdim=True)
 
         print(f"X-CLIP Initialized: model={model_id} n_frames={n_frames}, frame_every={frame_every}, "
               f"clip_every={clip_every}\n",
@@ -108,15 +108,41 @@ class VLMRewardWrapper(gym.Wrapper):
         info["vlm_reward"] = self.last_reward
         return obs, self.last_reward, terminated, truncated, info
 
-    def compute_vlm_reward(self):
-        frames = list(self.frame_buffer)  # [n_frames x (H, W, C)]
+    # def compute_vlm_reward(self):
+    #     frames = [np.ascontiguousarray(f).astype(np.uint8) for f in self.frame_buffer]
 
-        inputs = self.processor(videos=[frames], return_tensors="pt")
-        pixel_values = inputs["pixel_values"].to(self.device, dtype=torch.float16)
+    #     inputs = self.processor(videos=[frames], return_tensors="pt")
+    #     print(inputs)
+
+    def compute_vlm_reward(self):
+        frames = [np.ascontiguousarray(f).astype(np.uint8) for f in self.frame_buffer]
+        
+        inputs = self.processor(images=frames, return_tensors="pt", padding=True)
+        inputs = {k: v.to(self.device) for k, v in inputs.items()}
+        inputs["pixel_values"] = inputs["pixel_values"].half()
+
+        batch_size = inputs["pixel_values"].shape[0]
+        dummy_ids = torch.zeros((batch_size, 1), dtype=torch.long, device=self.device)
+        dummy_mask = torch.ones((batch_size, 1), dtype=torch.long, device=self.device)
 
         with torch.no_grad():
-            img_feats = self.model.get_video_features(pixel_values)
+            outputs = self.model(
+                input_ids=dummy_ids,
+                attention_mask=dummy_mask,
+                pixel_values=inputs["pixel_values"],
+                return_dict=True,
+            )
+            img_feats = outputs.video_embeds
             img_feats = img_feats / img_feats.norm(p=2, dim=-1, keepdim=True)
             similarity = (img_feats @ self.text_features.T).item()
 
         return similarity
+
+# [Debug] videos=np_frames -> keys: []
+# [Debug] videos=[np_frames] -> keys: []
+# [Debug] videos=pil_frames -> keys: []
+# [Debug] videos=[pil_frames] -> keys: []
+# [Debug] images=np_frames -> keys: ['pixel_values']
+# [Debug] images=[np_frames] -> keys: ['pixel_values']
+# [Debug] images=pil_frames -> keys: ['pixel_values']
+# [Debug] images=[pil_frames] -> keys: ['pixel_values']

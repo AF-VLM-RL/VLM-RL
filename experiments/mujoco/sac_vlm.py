@@ -43,10 +43,11 @@ class Args:
 
     # VLM reward arguments
     vlm_model_type: str = "clip"
-    """Type of VLM model to use. Options: 'clip', 'qwen'"""
+    """Type of VLM model to use. Options: 'clip', 'qwen', 'xclip'"""
     vlm_model_id: str = "openai/clip-vit-base-patch32"
-    """CLIP model to use. Options: 'openai/clip-vit-base-patch32', 'openai/clip-vit-large-patch14'"""
-    """Qwen model to use. Options: 'Qwen/Qwen2-VL-2B-Instruct', 'Qwen/Qwen2-VL-7B-Instruct'"""
+    """ CLIP model to use. Options: 'openai/clip-vit-base-patch32'
+        Qwen model to use. Options: 'Qwen/Qwen2-VL-2B-Instruct', 'Qwen/Qwen2-VL-7B-Instruct'
+        XCLIP model to use. Options: 'microsoft/xclip-base-patch32' """
     vlm_goal: str = "an ant robot walking right stably"
     """The natural language goal for VLM reward shaping"""
     vlm_device: str = "auto"
@@ -102,6 +103,12 @@ def resolve_vlm_device(vlm_device, use_cuda):
 def make_env(env_id, seed, args):
     def thunk():
         env = gym.make(env_id, render_mode="rgb_array")
+
+        if args.vlm_model_type == "qwen":
+            extra_args = {"fps": env.metadata.get("render_fps", 30) / args.vlm_frame_every}
+        else:
+            extra_args = {}
+
         env = VLMRewardWrapper(
             env,
             model_id=args.vlm_model_id,
@@ -109,7 +116,8 @@ def make_env(env_id, seed, args):
             device=args.vlm_device,
             n_frames=args.vlm_n_frames,
             frame_every=args.vlm_frame_every,
-            clip_every=args.vlm_clip_every
+            clip_every=args.vlm_clip_every,
+            **extra_args,
         )
         env = gym.wrappers.RecordEpisodeStatistics(env)
         env.action_space.seed(seed)
@@ -200,6 +208,8 @@ if __name__ == "__main__":
     elif args.vlm_model_type == "xclip":
         from src.wrappers_xclip import VLMRewardWrapper
 
+    print(f"Starting Python script: environment=mujoco, algorithm=sac, model={args.vlm_model_type}, device={args.vlm_device}...")
+
     # TRY NOT TO MODIFY: seeding
     random.seed(args.seed)
     np.random.seed(args.seed)
@@ -215,6 +225,8 @@ if __name__ == "__main__":
 
     episode_count = 0
     episode_frames = []
+    ema_return = None
+    ema_alpha = 0.1
     best_episode_return = -float("inf")
     best_episode_path = os.path.join(run_dir, "best_model.pt")
 
@@ -226,7 +238,6 @@ if __name__ == "__main__":
     assert isinstance(envs.single_action_space, gym.spaces.Box), "only continuous action space is supported"
     assert isinstance(envs.single_observation_space, gym.spaces.Box), "only Box observation space is supported"
     
-
     # Logging setup
     if args.track:
         wandb.init(
@@ -308,7 +319,12 @@ if __name__ == "__main__":
                     ep_return = infos["episode"]["r"][i].item()
                     ep_length = infos["episode"]["l"][i].item()
 
-                    print(f"global_step={global_step}, episode={episode_count}, episodic_return={ep_return:.3f}")
+                    if ema_return is None:
+                        ema_return = ep_return
+                    else:
+                        ema_return = ema_alpha * ep_return + (1 - ema_alpha) * ema_return
+
+                    print(f"global_step={global_step}, episode={episode_count}, episode_length={ep_length}, episodic_return={ep_return:.3f}, ema_return={ema_return:.3f}")
                     writer.add_scalar("charts/episodic_return", ep_return, global_step)
                     writer.add_scalar("charts/episodic_length", ep_length, global_step)
 

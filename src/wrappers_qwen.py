@@ -1,5 +1,4 @@
 import collections
-import os
 import gymnasium as gym
 import torch
 import numpy as np
@@ -9,8 +8,8 @@ from qwen_vl_utils import process_vision_info
 
 
 class VLMRewardWrapper(gym.Wrapper):
-    def __init__(self, env, text_goal, device, n_frames=4, frame_every=4, clip_every=16,
-                 model_id="Qwen/Qwen2-VL-2B-Instruct",
+    def __init__(self, env, text_goal, device, model_id="Qwen/Qwen2-VL-2B-Instruct",
+                 n_frames=4, frame_every=4, clip_every=16, fps=1,
                  delta_reward=True, normalize_reward=True, reward_scale=10.0):
         assert clip_every >= frame_every, "clip_every must be >= frame_every"
         assert clip_every % frame_every == 0, "clip_every must be a multiple of frame_every"
@@ -20,6 +19,7 @@ class VLMRewardWrapper(gym.Wrapper):
         self.n_frames = n_frames
         self.frame_every = frame_every
         self.clip_every = clip_every
+        self.fps = fps
         self.step_count = 0
         self.last_reward = 0.0
 
@@ -80,10 +80,11 @@ class VLMRewardWrapper(gym.Wrapper):
         return reward
 
     def _build_prompt(self, pil_frames, prompt):
-        content = []
-        for frame in pil_frames:
-            content.append({"type": "image", "image": frame})
-        content.append({"type": "text", "text": prompt})
+        content = [
+            {"type": "video", "video": pil_frames, "fps": self.fps},
+            {"type": "text", "text": prompt},
+        ]
+
         return content
 
     def _get_description(self, pil_frames, prompt):
@@ -192,7 +193,7 @@ class VLMRewardWrapper(gym.Wrapper):
         last_logits = outputs.logits[0, -1, :]       # (vocab_size,)
         yes_no_logits = last_logits[[self.yes_token_id, self.no_token_id]]
         probs = torch.softmax(yes_no_logits, dim=0)
-        reward = probs[0].item()                      # P("Yes"), in [0, 1]
+        reward = probs[0].item()                     # P("Yes"), in [0, 1]
 
         return reward
 

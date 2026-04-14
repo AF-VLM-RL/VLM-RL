@@ -1,8 +1,8 @@
 import collections
 import gymnasium as gym
+import numpy as np
 import torch
 import torch.nn.functional as F
-import numpy as np
 from transformers import CLIPModel, CLIPTokenizer
 
 
@@ -37,7 +37,7 @@ class VLMRewardWrapper(gym.Wrapper):
         with torch.no_grad():
             text_inputs = tokenizer([text_goal], padding=True, return_tensors="pt")
             text_feats = self.model.get_text_features(**text_inputs.to(device))
-            self.text_features = (text_feats / text_feats.norm(p=2, dim=-1, keepdim=True)).half()
+            self.text_features = text_feats / text_feats.norm(p=2, dim=-1, keepdim=True))
 
         self.mean = torch.tensor([0.4814, 0.4578, 0.4082], device=device, dtype=torch.float16).view(1, 3, 1, 1)
         self.std  = torch.tensor([0.2686, 0.2613, 0.2757], device=device, dtype=torch.float16).view(1, 3, 1, 1)

@@ -25,21 +25,21 @@ cd "$HOME/CS490/VLM-RL"
 uv sync
 
 CMD="srun uv run python experiments/mujoco/sac_vlm.py \
-  --env-id Reacher-v4 \
+  --env-id Ant-v4 \
   --run-id $SLURM_JOB_ID \
-  --seed 1 \
+  --seed 2 \
   --total-timesteps 1000000 \
-  --vlm-goal 'A two-jointed robot arm minimizing the fingertip distance to a target red point.' \
-  --vlm-n-frames 8 \
-  --vlm-frame-every 2 \
+  --vlm-goal 'A four-legged ant robot walking forward to the right, upright on a flat surface.' \
+  --vlm-n-frames 4 \
+  --vlm-frame-every 4 \
   --vlm-clip-every 16 \
-  --capture-video
+  --capture-video \
 "
 
 if [ "$1" == "clip" ]; then
   CMD="$CMD --vlm-model-type clip --vlm-model-id openai/clip-vit-base-patch32 --video-every 500"
 elif [ "$1" == "qwen" ]; then
-  CMD="$CMD --vlm-model-type qwen --vlm-model-id Qwen/Qwen2-VL-2B-Instruct --video-every 100"
+  CMD="$CMD --vlm-model-type qwen --vlm-model-id Qwen/Qwen2-VL-7B-Instruct --video-every 100"
 elif [ "$1" == "xclip" ]; then
   CMD="$CMD --vlm-model-type xclip --vlm-model-id microsoft/xclip-base-patch32  --video-every 100"
 else
@@ -47,8 +47,7 @@ else
   exit 1
 fi
 
-echo "GPU Info: $(nvidia-smi --query-gpu=name --format=csv,noheader)"
-echo "Starting SAC in MuJoCo environment training..."
-echo "Starting SAC + $1 in MuJoCo environment training..."
 echo "Command: $CMD"
+echo "Starting batch script:environment=mujoco, algorithm=sac, model=$1, \
+  device=$(nvidia-smi --query-gpu=name --format=csv,noheader), job_id=$SLURM_JOB_ID"
 eval "$CMD"
