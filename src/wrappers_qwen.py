@@ -3,14 +3,13 @@ import gymnasium as gym
 import torch
 import numpy as np
 from PIL import Image
-from transformers import Qwen2VLForConditionalGeneration, AutoProcessor
-from qwen_vl_utils import process_vision_info
+from transformers import AutoModelForImageTextToText, AutoProcessor
 
 
 class VLMRewardWrapper(gym.Wrapper):
-    def __init__(self, env, text_goal, device, model_id="Qwen/Qwen2-VL-2B-Instruct",
-                 n_frames=4, frame_every=4, clip_every=16, fps=1,
-                 delta_reward=True, normalize_reward=True, reward_scale=10.0):
+    def __init__(self, env, text_goal, device, model_id="Qwen/Qwen3-VL-8B-Instruct",
+                 n_frames=4, frame_every=4, clip_every=16,
+                 delta_reward=False, normalize_reward=False, reward_scale=10.0):
         assert clip_every >= frame_every, "clip_every must be >= frame_every"
         assert clip_every % frame_every == 0, "clip_every must be a multiple of frame_every"
 
@@ -19,7 +18,6 @@ class VLMRewardWrapper(gym.Wrapper):
         self.n_frames = n_frames
         self.frame_every = frame_every
         self.clip_every = clip_every
-        self.fps = fps
         self.step_count = 0
         self.last_reward = 0.0
 
@@ -34,18 +32,15 @@ class VLMRewardWrapper(gym.Wrapper):
 
         self.frame_buffer = collections.deque(maxlen=n_frames)
 
-        self.model = Qwen2VLForConditionalGeneration.from_pretrained(
+        self.model = AutoModelForImageTextToText.from_pretrained(
             model_id,
-            torch_dtype=torch.float16,
+            torch_dtype=torch.bfloat16,
             device_map=device,
         )
         self.model.eval()
         self.processor = AutoProcessor.from_pretrained(model_id)
 
         self.text_goal = text_goal
-
-        self.yes_token_id = self.processor.tokenizer.encode("Yes", add_special_tokens=False)[0]
-        self.no_token_id = self.processor.tokenizer.encode("No", add_special_tokens=False)[0]
 
         print("Qwen-VL Initialized: model={0}, n_frames={1}, frame_every={2}, clip_every={3}".format(
             model_id, n_frames, frame_every, clip_every
@@ -81,13 +76,12 @@ class VLMRewardWrapper(gym.Wrapper):
 
     def _build_prompt(self, pil_frames, prompt):
         content = [
-            {"type": "video", "video": pil_frames, "fps": self.fps},
+            {"type": "video", "video": pil_frames},
             {"type": "text", "text": prompt},
         ]
-
         return content
 
-    def _get_description(self, pil_frames, prompt):
+    def _generate_text(self, pil_frames, prompt, max_new_tokens=500):
         messages = [
             {
                 "role": "user",
@@ -95,25 +89,24 @@ class VLMRewardWrapper(gym.Wrapper):
             }
         ]
 
-        text = self.processor.apply_chat_template(
-            messages, tokenize=False, add_generation_prompt=True
-        )
-        image_inputs, video_inputs = process_vision_info(messages)
-        inputs = self.processor(
-            text=[text],
-            images=image_inputs,
-            videos=video_inputs,
+        inputs = self.processor.apply_chat_template(
+            messages,
+            tokenize=True,
+            add_generation_prompt=True,
+            return_dict=True,
             return_tensors="pt",
+            num_frames=self.n_frames,
+            fps=None,
         ).to(self.device)
 
         with torch.no_grad():
-            output_ids = self.model.generate(**inputs, max_new_tokens=500)
+            output_ids = self.model.generate(**inputs, max_new_tokens=max_new_tokens)
 
         input_len = inputs["input_ids"].shape[1]
         description = self.processor.tokenizer.decode(
             output_ids[0][input_len:], skip_special_tokens=True
         )
-        return description
+        return description.strip()
 
     def reset(self, **kwargs):
         obs, info = self.env.reset(**kwargs)
@@ -157,45 +150,35 @@ class VLMRewardWrapper(gym.Wrapper):
             for f in self.frame_buffer
         ]
 
-        # description = self._get_description(
-        #     pil_frames,
-        #     f"These are {self.n_frames} consecutive frames of a robot in a physics simulation. "
-        #     f"Describe what the robot is doing across these frames."
-        # )
-        # print(f"[VLM Description] {description}")
-
-        messages = [
-            {
-                "role": "user",
-                "content": self._build_prompt(
-                    pil_frames,
-                    f"Does this show {self.text_goal}? "
-                    f"Answer only Yes or No."
-                ),
-            }
-        ]
-
-        text = self.processor.apply_chat_template(
-            messages, tokenize=False, add_generation_prompt=True
+        description = self._generate_text(
+            pil_frames,
+            f"Watch this video of a robot in a physics simulation. "
+            f"In one sentence, describe what the robot is doing."
         )
+        
+        prompt = (
+            f"A robot in a physics simulation was observed doing the following:\n"
+            f"{description}\n\n"
+            f"Rate how well the robot is achieving this goal: {self.text_goal}\n"
+            f"on a scale from 0 to 10:\n"
+            f"  0 = completely still or fallen over\n"
+            f"  3 = moving slightly but mostly failing\n"
+            f"  5 = moving but awkwardly or inefficiently\n"
+            f"  7 = moving reasonably well with some issues\n"
+            f" 10 = moving smoothly and clearly achieving the goal\n"
+            f"Respond with only a single integer from 0 to 10."
+        )
+        raw_text = self._generate_text(pil_frames, prompt, max_new_tokens=8)
+        print(f"[VLM Score] Description: {description}\n    -> Score: '{raw_text}'")
 
-        image_inputs, video_inputs = process_vision_info(messages)
-        inputs = self.processor(
-            text=[text],
-            images=image_inputs,
-            videos=video_inputs,
-            return_tensors="pt",
-        ).to(self.device)
+        try:
+            score = int(raw_text.split()[0])
+            score = max(0, min(10, score))  # clamp to [0, 10]
+        except (ValueError, IndexError):
+            print(f"[VLM Warning] Could not parse score from: '{raw_text}', defaulting to 5")
+            score = 5
 
-        with torch.no_grad():
-            outputs = self.model(**inputs)
-
-        last_logits = outputs.logits[0, -1, :]       # (vocab_size,)
-        yes_no_logits = last_logits[[self.yes_token_id, self.no_token_id]]
-        probs = torch.softmax(yes_no_logits, dim=0)
-        reward = probs[0].item()                     # P("Yes"), in [0, 1]
-
-        return reward
+        return score / 10.0  # normalize to [0, 1]
 
 # Improvements so far:
 # 1. Added passing multiple frames to Qwen
@@ -203,3 +186,5 @@ class VLMRewardWrapper(gym.Wrapper):
 # 3. Added running mean and std normalization for rewards
 # 4. Set reward value as 0 when not computing Qwen score (might be removed)
 # 5. Added chain-of thought prompting
+# 6. Upgraded to Qwen3-VL
+# 7. Switched from binary Yes/No logit to numeric 0-10 generation

@@ -46,7 +46,8 @@ class Args:
     """Type of VLM model to use. Options: 'clip', 'qwen', 'xclip'"""
     vlm_model_id: str = "openai/clip-vit-base-patch32"
     """ CLIP model to use. Options: 'openai/clip-vit-base-patch32'
-        Qwen model to use. Options: 'Qwen/Qwen2-VL-2B-Instruct', 'Qwen/Qwen2-VL-7B-Instruct'
+        Qwen2 model to use. Options: 'Qwen/Qwen2-VL-2B-Instruct', 'Qwen/Qwen2-VL-7B-Instruct'
+        Qwen3 model to use. Options: 'Qwen/Qwen3-VL-2B-Instruct', 'Qwen/Qwen3-VL-8B-Instruct'
         XCLIP model to use. Options: 'microsoft/xclip-base-patch32' """
     vlm_goal: str = "an ant robot walking right stably"
     """The natural language goal for VLM reward shaping"""
@@ -104,11 +105,6 @@ def make_env(env_id, seed, args):
     def thunk():
         env = gym.make(env_id, render_mode="rgb_array")
 
-        if args.vlm_model_type == "qwen":
-            extra_args = {"fps": env.metadata.get("render_fps", 30) / args.vlm_frame_every}
-        else:
-            extra_args = {}
-
         env = VLMRewardWrapper(
             env,
             model_id=args.vlm_model_id,
@@ -117,7 +113,6 @@ def make_env(env_id, seed, args):
             n_frames=args.vlm_n_frames,
             frame_every=args.vlm_frame_every,
             clip_every=args.vlm_clip_every,
-            **extra_args,
         )
         env = gym.wrappers.RecordEpisodeStatistics(env)
         env.action_space.seed(seed)
@@ -203,7 +198,7 @@ if __name__ == "__main__":
 
     if args.vlm_model_type == "clip":
         from src.wrappers_clip import VLMRewardWrapper
-    elif args.vlm_model_type == "qwen":
+    elif args.vlm_model_type in ("qwen2", "qwen3"):
         from src.wrappers_qwen import VLMRewardWrapper
     elif args.vlm_model_type == "xclip":
         from src.wrappers_xclip import VLMRewardWrapper

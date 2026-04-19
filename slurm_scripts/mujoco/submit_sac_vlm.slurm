@@ -27,27 +27,32 @@ uv sync
 CMD="srun uv run python experiments/mujoco/sac_vlm.py \
   --env-id Ant-v4 \
   --run-id $SLURM_JOB_ID \
-  --seed 2 \
+  --seed 3 \
   --total-timesteps 1000000 \
-  --vlm-goal 'A four-legged ant robot walking forward to the right, upright on a flat surface.' \
-  --vlm-n-frames 4 \
-  --vlm-frame-every 4 \
+  --vlm-goal 'A robot moving forward across a flat surface.' \
+  --vlm-n-frames 8 \
+  --vlm-frame-every 2 \
   --vlm-clip-every 16 \
   --capture-video \
 "
 
 if [ "$1" == "clip" ]; then
   CMD="$CMD --vlm-model-type clip --vlm-model-id openai/clip-vit-base-patch32 --video-every 500"
-elif [ "$1" == "qwen" ]; then
-  CMD="$CMD --vlm-model-type qwen --vlm-model-id Qwen/Qwen2-VL-7B-Instruct --video-every 100"
 elif [ "$1" == "xclip" ]; then
   CMD="$CMD --vlm-model-type xclip --vlm-model-id microsoft/xclip-base-patch32  --video-every 100"
+elif [ "$1" == "qwen2" ]; then
+  CMD="$CMD --vlm-model-type qwen2 --vlm-model-id Qwen/Qwen2-VL-7B-Instruct --video-every 100"
+elif [ "$1" == "qwen3" ]; then
+  CMD="$CMD --vlm-model-type qwen3 --vlm-model-id Qwen/Qwen3-VL-8B-Instruct --video-every 100"
 else
-  echo "Invalid argument: $1. Use 'clip', 'qwen', or 'xclip'."
+  echo "Invalid argument: $1. Use 'clip', 'qwen2', 'qwen3', or 'xclip'."
   exit 1
 fi
 
 echo "Command: $CMD"
+if [ -n "$2" ]; then
+    echo "Note: $2"
+fi
 echo "Starting batch script:environment=mujoco, algorithm=sac, model=$1, \
   device=$(nvidia-smi --query-gpu=name --format=csv,noheader), job_id=$SLURM_JOB_ID"
 eval "$CMD"
