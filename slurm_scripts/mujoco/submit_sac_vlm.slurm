@@ -29,7 +29,7 @@ CMD="srun uv run python experiments/mujoco/sac_vlm.py \
   --run-id $SLURM_JOB_ID \
   --seed 3 \
   --total-timesteps 1000000 \
-  --vlm-goal 'A robot moving forward across a flat surface.' \
+  --vlm-goal '[NOT USED]' \
   --vlm-n-frames 8 \
   --vlm-frame-every 2 \
   --vlm-clip-every 16 \

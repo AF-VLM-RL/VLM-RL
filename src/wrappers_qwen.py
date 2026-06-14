@@ -9,23 +9,27 @@ from transformers import AutoModelForImageTextToText, AutoProcessor
 class VLMRewardWrapper(gym.Wrapper):
     def __init__(self, env, text_goal, device, model_id="Qwen/Qwen3-VL-8B-Instruct",
                  n_frames=4, frame_every=4, clip_every=16,
-                 delta_reward=False, normalize_reward=False, reward_scale=10.0):
+                 delta_reward=False, normalize_reward=False, reward_scale=10.0,
+                 cot=True):
         assert clip_every >= frame_every, "clip_every must be >= frame_every"
         assert clip_every % frame_every == 0, "clip_every must be a multiple of frame_every"
 
         super().__init__(env)
         self.device = device
+        self.cot = cot
+
         self.n_frames = n_frames
         self.frame_every = frame_every
         self.clip_every = clip_every
-        self.step_count = 0
-        self.last_reward = 0.0
 
-        self.delta_reward = delta_reward
+        self.step_count = 0
+        self.prev_reward = 0.0
         self.prev_raw_score = None
 
+        self.delta_reward = delta_reward
         self.normalize_reward = normalize_reward
         self.reward_scale = reward_scale
+
         self._reward_running_mean = 0.0
         self._reward_running_var = 1.0
         self._reward_count = 0
@@ -121,7 +125,7 @@ class VLMRewardWrapper(gym.Wrapper):
 
         raw_score = self.compute_vlm_reward()
         self.prev_raw_score = raw_score
-        self.last_reward = 0.0
+        self.prev_reward = 0.0
         print(f"[VLM Debug] Reset: raw={raw_score:.4f}")
         return obs, info
 
@@ -136,13 +140,13 @@ class VLMRewardWrapper(gym.Wrapper):
 
         if self.step_count % self.clip_every == 0:
             raw_score = self.compute_vlm_reward()
-            self.last_reward = self._compute_reward(raw_score)
+            self.prev_reward = self._compute_reward(raw_score)
             print(f"[VLM Debug] step={self.step_count} | "
-                  f"raw={raw_score:.4f} | shaped={self.last_reward:.4f} | "
+                  f"raw={raw_score:.4f} | shaped={self.prev_reward:.4f} | "
                   f"reward_mean={self._reward_running_mean:.4f}")
 
-        info["vlm_reward"] = self.last_reward
-        return obs, self.last_reward, terminated, truncated, info
+        info["vlm_reward"] = self.prev_reward
+        return obs, self.prev_reward, terminated, truncated, info
 
     def compute_vlm_reward(self):
         pil_frames = [
@@ -150,26 +154,49 @@ class VLMRewardWrapper(gym.Wrapper):
             for f in self.frame_buffer
         ]
 
-        description = self._generate_text(
-            pil_frames,
-            f"Watch this video of a robot in a physics simulation. "
-            f"In one sentence, describe what the robot is doing."
+        local_goal = (
+            "A four-legged ant-like robot moving forward to the right quickly and stably across the ground, "
+            "using coordinated leg motion without flipping over, spinning, sliding, or dragging its body."
         )
-        
-        prompt = (
-            f"A robot in a physics simulation was observed doing the following:\n"
-            f"{description}\n\n"
-            f"Rate how well the robot is achieving this goal: {self.text_goal}\n"
-            f"on a scale from 0 to 10:\n"
-            f"  0 = completely still or fallen over\n"
-            f"  3 = moving slightly but mostly failing\n"
-            f"  5 = moving but awkwardly or inefficiently\n"
-            f"  7 = moving reasonably well with some issues\n"
-            f" 10 = moving smoothly and clearly achieving the goal\n"
-            f"Respond with only a single integer from 0 to 10."
+        prompt_template = (
+            "{header}\n"
+            f"Goal: {local_goal}\n\n"
+            "Rate how well the robot is achieving the goal on a scale from 0 to 10.\n\n"
+            "Scoring guide:\n"
+            "  0 = flipped over, completely still, stuck, or moving backward\n"
+            "  2 = mostly unstable, spinning in place, dragging its body, or barely moving\n"
+            "  4 = some forward movement, but mostly sliding, tumbling, twisting, or using its legs poorly\n"
+            "  6 = moving forward, but awkwardly, slowly, or with poor body stability\n"
+            "  8 = moving forward reasonably well with mostly stable body posture and leg motion\n"
+            " 10 = smooth, stable, fast forward movement using coordinated four-legged walking\n\n"
+            "Only judge visible behavior. Prefer stable forward movement with coordinated leg motion over spinning, sliding, dragging, tumbling, or falling forward.\n"
+            "Respond with only a single integer from 0 to 10."
         )
+
+        if self.cot:
+            description = self._generate_text(
+                pil_frames,
+                "Watch this video of a four-legged ant-like robot in a physics simulation. "
+                "In one sentence, describe the visible motion of the robot. "
+                "Mention whether it is upright, moving forward, moving backward, spinning, "
+                "flipping over, dragging its body, sliding, stuck, or using its legs to walk."
+            )
+            header = (
+                "The following video shows a four-legged ant-like robot in a physics simulation.\n"
+                "A preliminary visual description is:\n"
+                f"{description}\n"
+                "Use the video itself as the main evidence. If the description conflicts with the video, ignore the description.\n"
+            )
+        else:
+            header = "The following video shows a four-legged ant-like robot in a physics simulation.\n"
+
+        prompt = prompt_template.format(header=header)
         raw_text = self._generate_text(pil_frames, prompt, max_new_tokens=8)
-        print(f"[VLM Score] Description: {description}\n    -> Score: '{raw_text}'")
+
+        if self.cot:
+            print(f"[VLM Score] Description: {description}\n    -> Score: '{raw_text}'")
+        else:
+            print(f"[VLM Score] Score: '{raw_text}'")
 
         try:
             score = int(raw_text.split()[0])
@@ -185,6 +212,6 @@ class VLMRewardWrapper(gym.Wrapper):
 # 2. Added option for delta reward (delta reward = current score - previous score)
 # 3. Added running mean and std normalization for rewards
 # 4. Set reward value as 0 when not computing Qwen score (might be removed)
-# 5. Added chain-of thought prompting
+# 5. Added Chain-of-Thought prompting
 # 6. Upgraded to Qwen3-VL
 # 7. Switched from binary Yes/No logit to numeric 0-10 generation
