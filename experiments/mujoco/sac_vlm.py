@@ -197,11 +197,11 @@ if __name__ == "__main__":
     args.vlm_device = resolve_vlm_device(args.vlm_device, args.cuda)
 
     if args.vlm_model_type == "clip":
-        from src.wrappers_clip import VLMRewardWrapper
+        from wrappers.clip import VLMRewardWrapper
     elif args.vlm_model_type in ("qwen2", "qwen3"):
-        from src.wrappers_qwen import VLMRewardWrapper
+        from wrappers.qwen_score import VLMRewardWrapper
     elif args.vlm_model_type == "xclip":
-        from src.wrappers_xclip import VLMRewardWrapper
+        from wrappers.xclip import VLMRewardWrapper
 
     print(f"Starting Python script: environment=mujoco, algorithm=sac, model={args.vlm_model_type}, device={args.vlm_device}...")
 
@@ -355,7 +355,7 @@ if __name__ == "__main__":
                     episode_frames = []
                     episode_count += 1
 
-        # TRY NOT TO MODIFY: save data to replay buffer; handle `final_observation`
+        # TRY NOT TO MODIFY: save data to reply buffer; handle `final_observation`
         real_next_obs = next_obs.copy()
         for idx, trunc in enumerate(truncations):
             if trunc:

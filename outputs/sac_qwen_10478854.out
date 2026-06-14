@@ -1,7 +1,7 @@
 Job ID: 10478854
 GPU Info: NVIDIA A10
 Starting SAC + Qwen in MuJoCo Ant environment training...
-Command: srun uv run python experiments/mujoco/sac_qwen_multiframe.py   --env-id Ant-v4   --run-id 10478854   --seed 4   --total-timesteps 1000000   --vlm-model-id Qwen/Qwen2-VL-7B-Instruct   --vlm-goal 'A four-legged ant robot walking forward to the right, upright on a flat surface.'   --vlm-n-frames 4   --vlm-frame-every 4   --vlm-clip-every 16   --track   --capture-video   --wandb-project-name cleanrl-experiments
+Command: srun uv run python experiments/mujoco/sac_qwen_multiframe.py   --env-id Ant-v4   --run-id 10478854   --seed 4   --total-timesteps 1000000   --vlm-model-type qwen2   --vlm-model-id Qwen/Qwen2-VL-7B-Instruct   --vlm-goal 'A four-legged ant robot walking forward to the right, upright on a flat surface.'   --vlm-n-frames 4   --vlm-frame-every 4   --vlm-clip-every 16   --track   --capture-video   --wandb-project-name cleanrl-experiments
 Qwen-VL Initialized: model=Qwen/Qwen2-VL-7B-Instruct, n_frames=4, frame_every=4, clip_every=16
 Prompt: 'Does this image show A four-legged ant robot walking forward to the right, upright on a flat surface.? Answer only Yes or No.'
 Yes token id: 9454, No token id: 2753

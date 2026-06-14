@@ -299,7 +299,7 @@ if __name__ == "__main__":
                     episode_frames = []
                     episode_count += 1
 
-        # TRY NOT TO MODIFY: save data to replay buffer; handle `final_observation`
+        # TRY NOT TO MODIFY: save data to reply buffer; handle `final_observation`
         real_next_obs = next_obs.copy()
         for idx, trunc in enumerate(truncations):
             if trunc:

@@ -1,7 +1,7 @@
 Job ID: 10479800
 GPU Info: NVIDIA A100-SXM4-40GB
 Starting SAC + CLIP in MuJoCo Ant environment training...
-Command: srun uv run python experiments/mujoco/sac_clip_multiframe.py   --env-id Ant-v4   --run-id 10479800   --seed 3   --total-timesteps 1000000   --vlm-goal 'A four-legged ant robot walking forward to the right, upright on a flat surface.'   --vlm-n-frames 8   --vlm-frame-every 2   --vlm-clip-every 16   --track   --capture-video   --wandb-project-name cleanrl-experiments
+Command: srun uv run python experiments/mujoco/sac_clip_multiframe.py   --env-id Ant-v4   --run-id 10479800   --seed 3   --total-timesteps 1000000   --vlm-model-type clip   --vlm-goal 'A four-legged ant robot walking forward to the right, upright on a flat surface.'   --vlm-n-frames 8   --vlm-frame-every 2   --vlm-clip-every 16   --track   --capture-video   --wandb-project-name cleanrl-experiments
 VLM Initialized: n_frames=8, frame_every=2, clip_every=16, goal='A four-legged ant robot walking forward to the right, upright on a flat surface.', delta_reward=True, normalize_reward=True
 [VLM Debug] Reset raw score: 0.2874
 [VLM Debug] Step 16 | raw=0.2458 | shaped=-0.0415 | reward_mean=-0.0415
